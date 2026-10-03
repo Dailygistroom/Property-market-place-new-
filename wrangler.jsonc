@@ -1,18 +1,7 @@
 {
-  "name": "property-marketplace-api",
-  "main": "worker.js",
+  "name": "property-market-place-new",
   "compatibility_date": "2026-10-03",
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "property-marketplace-db",
-      "database_id": "390a392b-f7f9-4296-96b0-d435ffae054d"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "IMAGES",
-      "bucket_name": "property-marketplace-img-938274"
-    }
-  ]
+  "assets": {
+    "directory": "."
+  }
 }
