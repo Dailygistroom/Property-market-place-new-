@@ -1,205 +1,176 @@
-const CORS_HEADERS = {
+const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Key",
-  "Access-Control-Max-Age": "86400"
+  "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Key"
 };
 
-const MAX_PHOTOS = 6;
-const SESSION_DAYS = 30;
-
-function json(data, status = 200, extraHeaders = {}) {
-  return new Response(JSON.stringify(data), {
+const json = (data, status = 200) =>
+  new Response(JSON.stringify(data), {
     status,
     headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      ...CORS_HEADERS,
-      ...extraHeaders
+      "Content-Type": "application/json",
+      ...CORS
     }
   });
-}
 
-function error(message, status = 400, extra = {}) {
-  return json({
-    success: false,
-    error: message,
-    ...extra
-  }, status);
-}
-
-function now() {
-  return new Date().toISOString();
-}
-
-function id() {
-  return crypto.randomUUID();
-}
-
-function clean(value, max = 5000) {
-  if (value === undefined || value === null) return "";
-  return String(value).trim().slice(0, max);
-}
-
-function numberOrNull(value) {
-  if (value === undefined || value === null || value === "") {
-    return null;
-  }
-
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function integerOrNull(value) {
-  const n = numberOrNull(value);
-  return n === null ? null : Math.floor(n);
-}
-
-function normalizePhotos(value) {
-  let photos = value;
-
-  if (typeof photos === "string") {
-    try {
-      photos = JSON.parse(photos);
-    } catch {
-      photos = photos
-        .split(",")
-        .map(x => x.trim())
-        .filter(Boolean);
+const text = (body, status = 200, headers = {}) =>
+  new Response(body, {
+    status,
+    headers: {
+      ...CORS,
+      ...headers
     }
-  }
+  });
 
-  if (!Array.isArray(photos)) {
-    return [];
-  }
-
-  return photos
-    .map(x => clean(x, 2000))
-    .filter(Boolean)
-    .slice(0, MAX_PHOTOS);
-}
-
-function normalizeFeatures(value) {
-  let features = value;
-
-  if (typeof features === "string") {
-    try {
-      features = JSON.parse(features);
-    } catch {
-      features = features
-        .split(",")
-        .map(x => x.trim())
-        .filter(Boolean);
-    }
-  }
-
-  if (!Array.isArray(features)) {
-    return [];
-  }
-
-  return features
-    .map(x => clean(x, 200))
-    .filter(Boolean)
-    .slice(0, 50);
-}
-
-async function parseBody(request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
+const now = () => new Date().toISOString();
+const id = () => crypto.randomUUID();
 
 async function ensureDatabase(env) {
-  if (!env.DB) {
-    throw new Error("D1 database binding DB is missing.");
+  await env.DB.batch([
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      phone TEXT,
+      role TEXT DEFAULT 'user',
+      created_at TEXT NOT NULL
+    )`),
+
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL
+    )`),
+
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS listings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      title TEXT NOT NULL,
+      property_type TEXT NOT NULL,
+      purpose TEXT NOT NULL,
+      price REAL NOT NULL,
+      location TEXT NOT NULL,
+      bedrooms INTEGER DEFAULT 0,
+      bathrooms INTEGER DEFAULT 0,
+      area REAL DEFAULT 0,
+      description TEXT,
+      features TEXT,
+      photos TEXT,
+      agent_name TEXT,
+      phone TEXT,
+      email TEXT,
+      owner_type TEXT,
+      status TEXT DEFAULT 'pending',
+      views INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )`),
+
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS inquiries (
+      id TEXT PRIMARY KEY,
+      listing_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT,
+      phone TEXT,
+      message TEXT,
+      created_at TEXT NOT NULL
+    )`),
+
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS favorites (
+      user_id TEXT NOT NULL,
+      listing_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY(user_id, listing_id)
+    )`)
+  ]);
+}
+
+function normalizeListing(row) {
+  if (!row) return null;
+
+  return {
+    ...row,
+    price: Number(row.price || 0),
+    bedrooms: Number(row.bedrooms || 0),
+    bathrooms: Number(row.bathrooms || 0),
+    area: Number(row.area || 0),
+    views: Number(row.views || 0),
+    features: safeJson(row.features, []),
+    photos: safeJson(row.photos, [])
+  };
+}
+
+function safeJson(value, fallback) {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function cleanFeatures(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map(String)
+      .map(x => x.trim())
+      .filter(Boolean)
+      .slice(0, 30);
   }
 
-  await env.DB.batch([
-    env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        phone TEXT,
-        password_hash TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'user',
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    `),
+  return String(value || "")
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean)
+    .slice(0, 30);
+}
 
-    env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS sessions (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        expires_at TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      )
-    `),
+function validListing(data) {
+  return (
+    data &&
+    data.title &&
+    data.property_type &&
+    data.purpose &&
+    data.location &&
+    Number(data.price) > 0
+  );
+}
 
-    env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS listings (
-        id TEXT PRIMARY KEY,
-        user_id TEXT,
-        title TEXT NOT NULL,
-        property_type TEXT NOT NULL,
-        purpose TEXT NOT NULL,
-        price REAL NOT NULL,
-        location TEXT NOT NULL,
-        bedrooms INTEGER,
-        bathrooms INTEGER,
-        area REAL,
-        description TEXT,
-        features TEXT,
-        photos TEXT,
-        agent_name TEXT,
-        phone TEXT,
-        email TEXT,
-        owner_type TEXT,
-        status TEXT NOT NULL DEFAULT 'pending',
-        views INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    `),
+function getToken(request) {
+  return (request.headers.get("Authorization") || "")
+    .replace(/^Bearer\s+/i, "")
+    .trim();
+}
 
-    env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS inquiries (
-        id TEXT PRIMARY KEY,
-        listing_id TEXT NOT NULL,
-        user_id TEXT,
-        name TEXT NOT NULL,
-        email TEXT,
-        phone TEXT,
-        message TEXT,
-        status TEXT NOT NULL DEFAULT 'new',
-        created_at TEXT NOT NULL
-      )
-    `),
+async function currentUser(request, env) {
+  const token = getToken(request);
 
-    env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS favorites (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        listing_id TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        UNIQUE(user_id, listing_id)
-      )
-    `)
-  ]);
+  if (!token) return null;
 
-  return true;
+  const row = await env.DB.prepare(
+    `SELECT u.*
+     FROM sessions s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.id = ?
+     AND s.expires_at > ?`
+  )
+    .bind(token, now())
+    .first();
+
+  return row || null;
 }
 
 async function hashPassword(password) {
-  const encoder = new TextEncoder();
+  const enc = new TextEncoder();
 
-  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const salt = crypto.getRandomValues(
+    new Uint8Array(16)
+  );
 
-  const baseKey = await crypto.subtle.importKey(
+  const key = await crypto.subtle.importKey(
     "raw",
-    encoder.encode(password),
+    enc.encode(password),
     "PBKDF2",
     false,
     ["deriveBits"]
@@ -212,271 +183,170 @@ async function hashPassword(password) {
       iterations: 100000,
       hash: "SHA-256"
     },
-    baseKey,
+    key,
     256
   );
 
-  return `${toBase64(salt)}:${toBase64(new Uint8Array(bits))}`;
+  const b64 = value =>
+    btoa(
+      String.fromCharCode(
+        ...new Uint8Array(value)
+      )
+    );
+
+  return `${b64(salt)}.${b64(bits)}`;
 }
 
 async function verifyPassword(password, stored) {
   try {
-    const [saltText, hashText] = stored.split(":");
+    const [s, p] = stored.split(".");
 
-    const salt = fromBase64(saltText);
-    const expected = fromBase64(hashText);
+    const salt = Uint8Array.from(
+      atob(s),
+      c => c.charCodeAt(0)
+    );
 
-    const encoder = new TextEncoder();
+    const expected = Uint8Array.from(
+      atob(p),
+      c => c.charCodeAt(0)
+    );
 
-    const baseKey = await crypto.subtle.importKey(
+    const key = await crypto.subtle.importKey(
       "raw",
-      encoder.encode(password),
+      new TextEncoder().encode(password),
       "PBKDF2",
       false,
       ["deriveBits"]
     );
 
-    const bits = await crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        salt,
-        iterations: 100000,
-        hash: "SHA-256"
-      },
-      baseKey,
-      256
+    const bits = new Uint8Array(
+      await crypto.subtle.deriveBits(
+        {
+          name: "PBKDF2",
+          salt,
+          iterations: 100000,
+          hash: "SHA-256"
+        },
+        key,
+        256
+      )
     );
 
-    const actual = new Uint8Array(bits);
-
-    if (actual.length !== expected.length) {
-      return false;
-    }
-
-    let difference = 0;
-
-    for (let i = 0; i < actual.length; i++) {
-      difference |= actual[i] ^ expected[i];
-    }
-
-    return difference === 0;
+    return (
+      bits.length === expected.length &&
+      bits.every((v, i) => v === expected[i])
+    );
   } catch {
     return false;
   }
 }
 
-function toBase64(bytes) {
-  let binary = "";
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return btoa(binary);
-}
-
-function fromBase64(value) {
-  const binary = atob(value);
-  const bytes = new Uint8Array(binary.length);
-
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-
-  return bytes;
-}
-
-function getBearerToken(request) {
-  const header = request.headers.get("Authorization") || "";
-
-  if (!header.toLowerCase().startsWith("bearer ")) {
-    return null;
-  }
-
-  return header.slice(7).trim() || null;
-}
-
-async function getCurrentUser(request, env) {
-  const token = getBearerToken(request);
-
-  if (!token) {
-    return null;
-  }
-
-  const session = await env.DB.prepare(`
-    SELECT
-      sessions.id,
-      sessions.user_id,
-      sessions.expires_at,
-      users.name,
-      users.email,
-      users.phone,
-      users.role
-    FROM sessions
-    JOIN users ON users.id = sessions.user_id
-    WHERE sessions.id = ?
-      AND sessions.expires_at > ?
-  `)
-    .bind(token, now())
-    .first();
-
-  return session || null;
-}
-
-async function requireUser(request, env) {
-  const user = await getCurrentUser(request, env);
-
-  if (!user) {
-    return {
-      ok: false,
-      response: error("Authentication required.", 401)
-    };
-  }
+function publicUser(user) {
+  if (!user) return null;
 
   return {
-    ok: true,
-    user
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role
   };
 }
 
-function validateListing(data) {
-  const required = [
-    ["title", "Property title"],
-    ["property_type", "Property type"],
-    ["purpose", "Purpose"],
-    ["location", "Location"]
-  ];
+async function register(request, env) {
+  const data = await request.json();
 
-  for (const [field, label] of required) {
-    if (!clean(data[field])) {
-      return `${label} is required.`;
-    }
+  if (
+    !data.name ||
+    !data.email ||
+    !data.password
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Name, email and password are required."
+      },
+      400
+    );
   }
 
-  const price = numberOrNull(data.price);
+  const email = String(data.email)
+    .trim()
+    .toLowerCase();
 
-  if (price === null || price < 0) {
-    return "A valid property price is required.";
+  if (data.password.length < 6) {
+    return json(
+      {
+        success: false,
+        error:
+          "Password must be at least 6 characters."
+      },
+      400
+    );
   }
 
-  const purpose = clean(data.purpose).toLowerCase();
-
-  if (!["sale", "rent", "shortlet", "lease"].includes(purpose)) {
-    return "Invalid property purpose.";
-  }
-
-  const photos = normalizePhotos(data.photos);
-
-  if (photos.length > MAX_PHOTOS) {
-    return `A maximum of ${MAX_PHOTOS} photos is allowed.`;
-  }
-
-  return null;
-}
-
-function listingResponse(row) {
-  if (!row) return null;
-
-  return {
-    id: row.id,
-    title: row.title,
-    property_type: row.property_type,
-    purpose: row.purpose,
-    price: row.price,
-    location: row.location,
-    bedrooms: row.bedrooms,
-    bathrooms: row.bathrooms,
-    area: row.area,
-    description: row.description || "",
-    features: normalizeFeatures(row.features),
-    photos: normalizePhotos(row.photos),
-    agent_name: row.agent_name || "",
-    phone: row.phone || "",
-    email: row.email || "",
-    owner_type: row.owner_type || "",
-    status: row.status,
-    views: row.views || 0,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
-
-async function registerUser(request, env) {
-  const data = await parseBody(request);
-
-  if (!data) {
-    return error("Invalid JSON.");
-  }
-
-  const name = clean(data.name, 120);
-  const email = clean(data.email, 200).toLowerCase();
-  const phone = clean(data.phone, 50);
-  const password = String(data.password || "");
-
-  if (!name || !email || !password) {
-    return error("Name, email and password are required.");
-  }
-
-  if (password.length < 8) {
-    return error("Password must be at least 8 characters.");
-  }
-
-  const existing = await env.DB.prepare(
+  const exists = await env.DB.prepare(
     "SELECT id FROM users WHERE email = ?"
   )
     .bind(email)
     .first();
 
-  if (existing) {
-    return error("An account with this email already exists.", 409);
+  if (exists) {
+    return json(
+      {
+        success: false,
+        error:
+          "An account with this email already exists."
+      },
+      409
+    );
   }
 
   const userId = id();
-  const timestamp = now();
-  const passwordHash = await hashPassword(password);
+  const created = now();
+  const passwordHash =
+    await hashPassword(data.password);
 
-  await env.DB.prepare(`
-    INSERT INTO users
-    (id, name, email, phone, password_hash, role, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, 'user', ?, ?)
-  `)
+  await env.DB.prepare(
+    `INSERT INTO users
+     (id, name, email, password_hash, phone, role, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  )
     .bind(
       userId,
-      name,
+      String(data.name).trim(),
       email,
-      phone,
       passwordHash,
-      timestamp,
-      timestamp
+      data.phone || null,
+      "user",
+      created
     )
     .run();
 
-  return json({
-    success: true,
-    message: "Account created successfully.",
-    user: {
-      id: userId,
-      name,
-      email,
-      phone,
-      role: "user"
-    }
-  }, 201);
+  return json(
+    {
+      success: true,
+      user: {
+        id: userId,
+        name: String(data.name).trim(),
+        email,
+        phone: data.phone || null,
+        role: "user"
+      }
+    },
+    201
+  );
 }
 
-async function loginUser(request, env) {
-  const data = await parseBody(request);
+async function login(request, env) {
+  const data = await request.json();
 
-  if (!data) {
-    return error("Invalid JSON.");
-  }
-
-  const email = clean(data.email, 200).toLowerCase();
-  const password = String(data.password || "");
-
-  if (!email || !password) {
-    return error("Email and password are required.");
-  }
+  const email = String(
+    data.email || ""
+  )
+    .trim()
+    .toLowerCase();
 
   const user = await env.DB.prepare(
     "SELECT * FROM users WHERE email = ?"
@@ -484,88 +354,194 @@ async function loginUser(request, env) {
     .bind(email)
     .first();
 
-  if (!user) {
-    return error("Invalid email or password.", 401);
-  }
-
-  const valid = await verifyPassword(password, user.password_hash);
-
-  if (!valid) {
-    return error("Invalid email or password.", 401);
+  if (
+    !user ||
+    !(await verifyPassword(
+      String(data.password || ""),
+      user.password_hash
+    ))
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Invalid email or password."
+      },
+      401
+    );
   }
 
   const token = id();
-  const timestamp = now();
-  const expiry = new Date(
-    Date.now() + SESSION_DAYS * 86400000
+  const created = now();
+
+  const expires = new Date(
+    Date.now() +
+      1000 * 60 * 60 * 24 * 30
   ).toISOString();
 
-  await env.DB.prepare(`
-    INSERT INTO sessions
-    (id, user_id, expires_at, created_at)
-    VALUES (?, ?, ?, ?)
-  `)
-    .bind(token, user.id, expiry, timestamp)
+  await env.DB.prepare(
+    `INSERT INTO sessions
+     (id, user_id, created_at, expires_at)
+     VALUES (?, ?, ?, ?)`
+  )
+    .bind(
+      token,
+      user.id,
+      created,
+      expires
+    )
     .run();
 
   return json({
     success: true,
     token,
-    expires_at: expiry,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role
-    }
-  });
-}
-
-async function logoutUser(request, env) {
-  const token = getBearerToken(request);
-
-  if (token) {
-    await env.DB.prepare(
-      "DELETE FROM sessions WHERE id = ?"
-    )
-      .bind(token)
-      .run();
-  }
-
-  return json({
-    success: true,
-    message: "Logged out successfully."
+    user: publicUser(user)
   });
 }
 
 async function createListing(request, env) {
-  const auth = await requireUser(request, env);
+  const contentType =
+    request.headers.get("content-type") || "";
 
-  if (!auth.ok) {
-    return auth.response;
+  let data = {};
+  let files = [];
+
+  if (
+    contentType.includes(
+      "multipart/form-data"
+    )
+  ) {
+    const formData =
+      await request.formData();
+
+    for (
+      const [key, value]
+      of formData.entries()
+    ) {
+      if (value instanceof File) {
+        if (
+          key === "photos" &&
+          value.size > 0
+        ) {
+          files.push(value);
+        }
+      } else {
+        data[key] = value;
+      }
+    }
+  } else {
+    data = await request.json();
   }
 
-  const data = await parseBody(request);
+  files = files.slice(0, 6);
 
-  if (!data) {
-    return error("Invalid JSON.");
+  if (!validListing(data)) {
+    return json(
+      {
+        success: false,
+        error:
+          "Please complete the required property details."
+      },
+      400
+    );
   }
 
-  const validationError = validateListing(data);
+  if (
+    files.some(
+      file =>
+        !file.type.startsWith("image/")
+    )
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Only image files are allowed."
+      },
+      400
+    );
+  }
 
-  if (validationError) {
-    return error(validationError);
+  if (
+    files.some(
+      file =>
+        file.size >
+        8 * 1024 * 1024
+    )
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Each image must be 8MB or smaller."
+      },
+      400
+    );
   }
 
   const listingId = id();
+  const stamp = Date.now();
+  const photos = [];
+
+  for (
+    let i = 0;
+    i < files.length;
+    i++
+  ) {
+    const file = files[i];
+
+    const ext = (
+      file.name.split(".").pop() ||
+      "jpg"
+    )
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]/g,
+        ""
+      );
+
+    const key =
+      `listings/${listingId}/` +
+      `${String(i + 1).padStart(2, "0")}-` +
+      `${stamp}.${ext || "jpg"}`;
+
+    await env.IMAGES.put(
+      key,
+      file.stream(),
+      {
+        httpMetadata: {
+          contentType:
+            file.type ||
+            "image/jpeg",
+          cacheControl:
+            "public, max-age=31536000"
+        }
+      }
+    );
+
+    photos.push(
+      `/api/images/${encodeURIComponent(
+        key
+      )}`
+    );
+  }
+
+  const user =
+    await currentUser(
+      request,
+      env
+    );
+
   const timestamp = now();
 
-  const photos = normalizePhotos(data.photos);
-  const features = normalizeFeatures(data.features);
+  const features =
+    cleanFeatures(
+      data.features
+    );
 
   await env.DB.prepare(`
-    INSERT INTO listings (
+    INSERT INTO listings
+    (
       id,
       user_id,
       title,
@@ -588,978 +564,1256 @@ async function createListing(request, env) {
       created_at,
       updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, ?, ?)
+    VALUES (
+      ?,?,?,?,?,?,?,?,?,?,
+      ?,?,?,?,?,?,?,?,?,?,?
+    )
   `)
     .bind(
       listingId,
-      auth.user.user_id,
-      clean(data.title, 200),
-      clean(data.property_type, 100),
-      clean(data.purpose, 50).toLowerCase(),
-      numberOrNull(data.price),
-      clean(data.location, 300),
-      integerOrNull(data.bedrooms),
-      integerOrNull(data.bathrooms),
-      numberOrNull(data.area),
-      clean(data.description, 10000),
+      user?.id || null,
+      String(data.title).trim(),
+      String(
+        data.property_type
+      ).trim(),
+      String(
+        data.purpose
+      ).trim(),
+      Number(data.price) || 0,
+      String(
+        data.location
+      ).trim(),
+      Number(data.bedrooms) || 0,
+      Number(data.bathrooms) || 0,
+      Number(data.area) || 0,
+      String(
+        data.description || ""
+      ).trim(),
       JSON.stringify(features),
       JSON.stringify(photos),
-      clean(data.agent_name, 150),
-      clean(data.phone, 50),
-      clean(data.email, 200),
-      clean(data.owner_type, 80),
+      String(
+        data.agent_name || ""
+      ).trim(),
+      String(
+        data.phone || ""
+      ).trim(),
+      String(
+        data.email || ""
+      ).trim(),
+      String(
+        data.owner_type || ""
+      ).trim(),
+      "pending",
+      0,
       timestamp,
       timestamp
     )
     .run();
 
-  return json({
-    success: true,
-    message: "Property submitted successfully and is awaiting approval.",
-    listing: {
-      id: listingId,
-      status: "pending"
-    }
-  }, 201);
-}
-
-async function getListings(request, env) {
-  const url = new URL(request.url);
-
-  const purpose = clean(url.searchParams.get("purpose"), 50);
-  const propertyType = clean(
-    url.searchParams.get("property_type"),
-    100
+  return json(
+    {
+      success: true,
+      listing:
+        normalizeListing({
+          id: listingId,
+          user_id:
+            user?.id || null,
+          title:
+            String(
+              data.title
+            ).trim(),
+          property_type:
+            String(
+              data.property_type
+            ).trim(),
+          purpose:
+            String(
+              data.purpose
+            ).trim(),
+          price:
+            Number(
+              data.price
+            ) || 0,
+          location:
+            String(
+              data.location
+            ).trim(),
+          bedrooms:
+            Number(
+              data.bedrooms
+            ) || 0,
+          bathrooms:
+            Number(
+              data.bathrooms
+            ) || 0,
+          area:
+            Number(
+              data.area
+            ) || 0,
+          description:
+            String(
+              data.description ||
+              ""
+            ).trim(),
+          features:
+            JSON.stringify(
+              features
+            ),
+          photos:
+            JSON.stringify(
+              photos
+            ),
+          agent_name:
+            String(
+              data.agent_name ||
+              ""
+            ).trim(),
+          phone:
+            String(
+              data.phone || ""
+            ).trim(),
+          email:
+            String(
+              data.email || ""
+            ).trim(),
+          owner_type:
+            String(
+              data.owner_type ||
+              ""
+            ).trim(),
+          status: "pending",
+          views: 0,
+          created_at:
+            timestamp,
+          updated_at:
+            timestamp
+        })
+    },
+    201
   );
-  const location = clean(
-    url.searchParams.get("location"),
-    300
-  );
-  const minPrice = numberOrNull(
-    url.searchParams.get("min_price")
-  );
-  const maxPrice = numberOrNull(
-    url.searchParams.get("max_price")
-  );
-  const bedrooms = integerOrNull(
-    url.searchParams.get("bedrooms")
-  );
-  const bathrooms = integerOrNull(
-    url.searchParams.get("bathrooms")
-  );
-
-  const limit = Math.min(
-    Math.max(
-      integerOrNull(url.searchParams.get("limit")) || 20,
-      1
-    ),
-    100
-  );
-
-  const offset = Math.max(
-    integerOrNull(url.searchParams.get("offset")) || 0,
-    0
-  );
-
-  const conditions = ["status = 'approved'"];
-  const bindings = [];
-
-  if (purpose) {
-    conditions.push("purpose = ?");
-    bindings.push(purpose.toLowerCase());
-  }
-
-  if (propertyType) {
-    conditions.push("LOWER(property_type) LIKE ?");
-    bindings.push(`%${propertyType.toLowerCase()}%`);
-  }
-
-  if (location) {
-    conditions.push("LOWER(location) LIKE ?");
-    bindings.push(`%${location.toLowerCase()}%`);
-  }
-
-  if (minPrice !== null) {
-    conditions.push("price >= ?");
-    bindings.push(minPrice);
-  }
-
-  if (maxPrice !== null) {
-    conditions.push("price <= ?");
-    bindings.push(maxPrice);
-  }
-
-  if (bedrooms !== null) {
-    conditions.push("bedrooms >= ?");
-    bindings.push(bedrooms);
-  }
-
-  if (bathrooms !== null) {
-    conditions.push("bathrooms >= ?");
-    bindings.push(bathrooms);
-  }
-
-  const where = conditions.join(" AND ");
-
-  const countQuery = `
-    SELECT COUNT(*) AS total
-    FROM listings
-    WHERE ${where}
-  `;
-
-  const listQuery = `
-    SELECT *
-    FROM listings
-    WHERE ${where}
-    ORDER BY created_at DESC
-    LIMIT ? OFFSET ?
-  `;
-
-  const countResult = await env.DB.prepare(countQuery)
-    .bind(...bindings)
-    .first();
-
-  const rows = await env.DB.prepare(listQuery)
-    .bind(...bindings, limit, offset)
-    .all();
-
-  return json({
-    success: true,
-    total: countResult?.total || 0,
-    limit,
-    offset,
-    listings: (rows.results || []).map(listingResponse)
-  });
 }
 
-async function getListing(request, env, listingId) {
-  const row = await env.DB.prepare(`
-    SELECT *
-    FROM listings
-    WHERE id = ?
-  `)
-    .bind(listingId)
-    .first();
+function imageKeyFromPath(path) {
+  const raw =
+    decodeURIComponent(
+      path.replace(
+        /^\/api\/images\//,
+        ""
+      )
+    );
 
-  if (!row) {
-    return error("Property not found.", 404);
+  if (
+    !raw ||
+    raw.includes("..") ||
+    raw.startsWith("/")
+  ) {
+    return null;
   }
 
-  await env.DB.prepare(`
-    UPDATE listings
-    SET views = views + 1
-    WHERE id = ?
-  `)
-    .bind(listingId)
-    .run();
-
-  row.views = (row.views || 0) + 1;
-
-  return json({
-    success: true,
-    listing: listingResponse(row)
-  });
+  return raw;
 }
 
-async function updateListing(request, env, listingId) {
-  const auth = await requireUser(request, env);
+async function serveImage(
+  request,
+  env,
+  pathname
+) {
+  const key =
+    imageKeyFromPath(
+      pathname
+    );
 
-  if (!auth.ok) {
-    return auth.response;
-  }
-
-  const existing = await env.DB.prepare(`
-    SELECT *
-    FROM listings
-    WHERE id = ?
-  `)
-    .bind(listingId)
-    .first();
-
-  if (!existing) {
-    return error("Property not found.", 404);
-  }
-
-  const isOwner = existing.user_id === auth.user.user_id;
-  const isAdmin = auth.user.role === "admin";
-
-  if (!isOwner && !isAdmin) {
-    return error("You are not allowed to update this listing.", 403);
-  }
-
-  const data = await parseBody(request);
-
-  if (!data) {
-    return error("Invalid JSON.");
-  }
-
-  const merged = {
-    title: data.title ?? existing.title,
-    property_type:
-      data.property_type ?? existing.property_type,
-    purpose:
-      data.purpose ?? existing.purpose,
-    price:
-      data.price ?? existing.price,
-    location:
-      data.location ?? existing.location,
-    photos:
-      data.photos ?? existing.photos,
-    description:
-      data.description ?? existing.description
-  };
-
-  const validationError = validateListing(merged);
-
-  if (validationError) {
-    return error(validationError);
-  }
-
-  const updated = now();
-
-  await env.DB.prepare(`
-    UPDATE listings
-    SET
-      title = ?,
-      property_type = ?,
-      purpose = ?,
-      price = ?,
-      location = ?,
-      bedrooms = ?,
-      bathrooms = ?,
-      area = ?,
-      description = ?,
-      features = ?,
-      photos = ?,
-      agent_name = ?,
-      phone = ?,
-      email = ?,
-      owner_type = ?,
-      updated_at = ?
-    WHERE id = ?
-  `)
-    .bind(
-      clean(data.title ?? existing.title, 200),
-      clean(
-        data.property_type ?? existing.property_type,
-        100
-      ),
-      clean(
-        data.purpose ?? existing.purpose,
-        50
-      ).toLowerCase(),
-      numberOrNull(data.price ?? existing.price),
-      clean(
-        data.location ?? existing.location,
-        300
-      ),
-      integerOrNull(
-        data.bedrooms ?? existing.bedrooms
-      ),
-      integerOrNull(
-        data.bathrooms ?? existing.bathrooms
-      ),
-      numberOrNull(
-        data.area ?? existing.area
-      ),
-      clean(
-        data.description ?? existing.description,
-        10000
-      ),
-      JSON.stringify(
-        normalizeFeatures(
-          data.features ?? existing.features
-        )
-      ),
-      JSON.stringify(
-        normalizePhotos(
-          data.photos ?? existing.photos
-        )
-      ),
-      clean(
-        data.agent_name ?? existing.agent_name,
-        150
-      ),
-      clean(
-        data.phone ?? existing.phone,
-        50
-      ),
-      clean(
-        data.email ?? existing.email,
-        200
-      ),
-      clean(
-        data.owner_type ?? existing.owner_type,
-        80
-      ),
-      updated,
-      listingId
-    )
-    .run();
-
-  return json({
-    success: true,
-    message: "Property updated successfully."
-  });
-}
-
-async function deleteListing(request, env, listingId) {
-  const auth = await requireUser(request, env);
-
-  if (!auth.ok) {
-    return auth.response;
-  }
-
-  const existing = await env.DB.prepare(`
-    SELECT *
-    FROM listings
-    WHERE id = ?
-  `)
-    .bind(listingId)
-    .first();
-
-  if (!existing) {
-    return error("Property not found.", 404);
-  }
-
-  const isOwner = existing.user_id === auth.user.user_id;
-  const isAdmin = auth.user.role === "admin";
-
-  if (!isOwner && !isAdmin) {
-    return error("You are not allowed to delete this listing.", 403);
-  }
-
-  await env.DB.prepare(
-    "DELETE FROM listings WHERE id = ?"
-  )
-    .bind(listingId)
-    .run();
-
-  return json({
-    success: true,
-    message: "Property deleted successfully."
-  });
-}
-
-async function createInquiry(request, env, listingId) {
-  const listing = await env.DB.prepare(`
-    SELECT id, title
-    FROM listings
-    WHERE id = ?
-  `)
-    .bind(listingId)
-    .first();
-
-  if (!listing) {
-    return error("Property not found.", 404);
-  }
-
-  const data = await parseBody(request);
-
-  if (!data) {
-    return error("Invalid JSON.");
-  }
-
-  const name = clean(data.name, 150);
-  const email = clean(data.email, 200);
-  const phone = clean(data.phone, 50);
-  const message = clean(data.message, 5000);
-
-  if (!name) {
-    return error("Name is required.");
-  }
-
-  const authUser = await getCurrentUser(request, env);
-
-  const inquiryId = id();
-
-  await env.DB.prepare(`
-    INSERT INTO inquiries
-    (id, listing_id, user_id, name, email, phone, message, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'new', ?)
-  `)
-    .bind(
-      inquiryId,
-      listingId,
-      authUser?.user_id || null,
-      name,
-      email,
-      phone,
-      message,
-      now()
-    )
-    .run();
-
-  return json({
-    success: true,
-    message: "Your property enquiry has been received.",
-    inquiry_id: inquiryId,
-    property: listing.title
-  }, 201);
-}
-
-async function addFavorite(request, env, listingId) {
-  const auth = await requireUser(request, env);
-
-  if (!auth.ok) {
-    return auth.response;
-  }
-
-  const listing = await env.DB.prepare(
-    "SELECT id FROM listings WHERE id = ?"
-  )
-    .bind(listingId)
-    .first();
-
-  if (!listing) {
-    return error("Property not found.", 404);
-  }
-
-  await env.DB.prepare(`
-    INSERT OR IGNORE INTO favorites
-    (id, user_id, listing_id, created_at)
-    VALUES (?, ?, ?, ?)
-  `)
-    .bind(
-      id(),
-      auth.user.user_id,
-      listingId,
-      now()
-    )
-    .run();
-
-  return json({
-    success: true,
-    message: "Property saved."
-  });
-}
-
-async function removeFavorite(request, env, listingId) {
-  const auth = await requireUser(request, env);
-
-  if (!auth.ok) {
-    return auth.response;
-  }
-
-  await env.DB.prepare(`
-    DELETE FROM favorites
-    WHERE user_id = ?
-      AND listing_id = ?
-  `)
-    .bind(auth.user.user_id, listingId)
-    .run();
-
-  return json({
-    success: true,
-    message: "Property removed from saved properties."
-  });
-}
-
-async function getFavorites(request, env) {
-  const auth = await requireUser(request, env);
-
-  if (!auth.ok) {
-    return auth.response;
-  }
-
-  const rows = await env.DB.prepare(`
-    SELECT listings.*
-    FROM favorites
-    JOIN listings
-      ON listings.id = favorites.listing_id
-    WHERE favorites.user_id = ?
-    ORDER BY favorites.created_at DESC
-  `)
-    .bind(auth.user.user_id)
-    .all();
-
-  return json({
-    success: true,
-    listings: (rows.results || []).map(listingResponse)
-  });
-}
-
-async function adminRequired(request, env) {
-  const configuredKey = env.ADMIN_KEY;
-
-  if (!configuredKey) {
-    return error(
-      "Admin access is not configured. Add ADMIN_KEY in Worker secrets.",
-      503
+  if (!key) {
+    return text(
+      "Not found",
+      404
     );
   }
 
-  const suppliedKey =
-    request.headers.get("X-Admin-Key") || "";
+  const object =
+    await env.IMAGES.get(
+      key
+    );
 
-  if (
-    !suppliedKey ||
-    suppliedKey !== configuredKey
-  ) {
-    return error("Invalid admin key.", 403);
+  if (!object) {
+    return text(
+      "Image not found",
+      404
+    );
   }
 
-  return null;
+  const headers =
+    new Headers(CORS);
+
+  object.writeHttpMetadata(
+    headers
+  );
+
+  headers.set(
+    "etag",
+    object.httpEtag
+  );
+
+  headers.set(
+    "Cache-Control",
+    "public, max-age=31536000, immutable"
+  );
+
+  return new Response(
+    object.body,
+    { headers }
+  );
 }
 
-async function adminListings(request, env) {
-  const denied = await adminRequired(request, env);
-
-  if (denied) {
-    return denied;
-  }
-
-  const url = new URL(request.url);
-
-  const status =
-    clean(url.searchParams.get("status"), 50);
-
-  let query = `
-    SELECT *
-    FROM listings
-  `;
-
-  const bindings = [];
-
-  if (status) {
-    query += " WHERE status = ?";
-    bindings.push(status);
-  }
-
-  query += " ORDER BY created_at DESC LIMIT 200";
-
-  const rows = await env.DB.prepare(query)
-    .bind(...bindings)
-    .all();
-
-  return json({
-    success: true,
-    listings: (rows.results || []).map(listingResponse)
-  });
-}
-
-async function adminSetListingStatus(
+async function listListings(
   request,
   env,
-  listingId
+  url
 ) {
-  const denied = await adminRequired(request, env);
-
-  if (denied) {
-    return denied;
-  }
-
-  const data = await parseBody(request);
-
-  if (!data) {
-    return error("Invalid JSON.");
-  }
-
-  const status = clean(data.status, 50);
-
-  const allowed = [
-    "pending",
-    "approved",
-    "rejected",
-    "sold",
-    "rented",
-    "archived"
+  const where = [
+    "status = 'approved'"
   ];
 
-  if (!allowed.includes(status)) {
-    return error("Invalid listing status.");
+  const binds = [];
+
+  const add = (
+    sql,
+    value
+  ) => {
+    where.push(sql);
+    binds.push(value);
+  };
+
+  if (
+    url.searchParams.get(
+      "purpose"
+    )
+  ) {
+    add(
+      "purpose = ?",
+      url.searchParams.get(
+        "purpose"
+      )
+    );
   }
 
-  const result = await env.DB.prepare(`
-    UPDATE listings
-    SET status = ?, updated_at = ?
-    WHERE id = ?
-  `)
-    .bind(status, now(), listingId)
+  if (
+    url.searchParams.get(
+      "property_type"
+    )
+  ) {
+    add(
+      "property_type = ?",
+      url.searchParams.get(
+        "property_type"
+      )
+    );
+  }
+
+  if (
+    url.searchParams.get(
+      "location"
+    )
+  ) {
+    add(
+      "location LIKE ?",
+      `%${url.searchParams.get(
+        "location"
+      )}%`
+    );
+  }
+
+  if (
+    url.searchParams.get(
+      "min_price"
+    )
+  ) {
+    add(
+      "price >= ?",
+      Number(
+        url.searchParams.get(
+          "min_price"
+        )
+      )
+    );
+  }
+
+  if (
+    url.searchParams.get(
+      "max_price"
+    )
+  ) {
+    add(
+      "price <= ?",
+      Number(
+        url.searchParams.get(
+          "max_price"
+        )
+      )
+    );
+  }
+
+  if (
+    url.searchParams.get(
+      "bedrooms"
+    )
+  ) {
+    add(
+      "bedrooms >= ?",
+      Number(
+        url.searchParams.get(
+          "bedrooms"
+        )
+      )
+    );
+  }
+
+  if (
+    url.searchParams.get(
+      "bathrooms"
+    )
+  ) {
+    add(
+      "bathrooms >= ?",
+      Number(
+        url.searchParams.get(
+          "bathrooms"
+        )
+      )
+    );
+  }
+
+  const limit =
+    Math.min(
+      Math.max(
+        Number(
+          url.searchParams.get(
+            "limit"
+          ) || 30
+        ),
+        1
+      ),
+      100
+    );
+
+  const page =
+    Math.max(
+      Number(
+        url.searchParams.get(
+          "page"
+        ) || 1
+      ),
+      1
+    );
+
+  const offset =
+    (page - 1) *
+    limit;
+
+  const sql = `
+    SELECT *
+    FROM listings
+    WHERE ${where.join(
+      " AND "
+    )}
+    ORDER BY created_at DESC
+    LIMIT ?
+    OFFSET ?
+  `;
+
+  const result =
+    await env.DB
+      .prepare(sql)
+      .bind(
+        ...binds,
+        limit,
+        offset
+      )
+      .all();
+
+  return json({
+    success: true,
+    listings:
+      (
+        result.results ||
+        []
+      ).map(
+        normalizeListing
+      ),
+    page,
+    limit
+  });
+}
+
+async function getListing(
+  request,
+  env,
+  idValue
+) {
+  const row =
+    await env.DB
+      .prepare(
+        "SELECT * FROM listings WHERE id = ?"
+      )
+      .bind(idValue)
+      .first();
+
+  if (!row) {
+    return json(
+      {
+        success: false,
+        error:
+          "Property not found."
+      },
+      404
+    );
+  }
+
+  await env.DB
+    .prepare(
+      "UPDATE listings SET views = views + 1 WHERE id = ?"
+    )
+    .bind(idValue)
     .run();
 
-  if (!result.success) {
-    return error("Unable to update listing.", 500);
-  }
+  row.views =
+    (row.views || 0) + 1;
 
   return json({
     success: true,
-    message: `Listing status changed to ${status}.`
+    listing:
+      normalizeListing(row)
   });
 }
 
-async function adminInquiries(request, env) {
-  const denied = await adminRequired(request, env);
+async function updateListing(
+  request,
+  env,
+  idValue
+) {
+  const user =
+    await currentUser(
+      request,
+      env
+    );
 
-  if (denied) {
-    return denied;
+  if (!user) {
+    return json(
+      {
+        success: false,
+        error:
+          "Sign in required."
+      },
+      401
+    );
   }
 
-  const rows = await env.DB.prepare(`
-    SELECT
-      inquiries.*,
-      listings.title AS property_title
-    FROM inquiries
-    LEFT JOIN listings
-      ON listings.id = inquiries.listing_id
-    ORDER BY inquiries.created_at DESC
-    LIMIT 500
-  `).all();
+  const existing =
+    await env.DB
+      .prepare(
+        "SELECT * FROM listings WHERE id = ?"
+      )
+      .bind(idValue)
+      .first();
 
-  return json({
-    success: true,
-    inquiries: rows.results || []
-  });
-}
-
-async function adminUsers(request, env) {
-  const denied = await adminRequired(request, env);
-
-  if (denied) {
-    return denied;
+  if (!existing) {
+    return json(
+      {
+        success: false,
+        error:
+          "Property not found."
+      },
+      404
+    );
   }
 
-  const rows = await env.DB.prepare(`
-    SELECT
-      id,
-      name,
-      email,
-      phone,
-      role,
-      created_at,
-      updated_at
-    FROM users
-    ORDER BY created_at DESC
-    LIMIT 500
-  `).all();
-
-  return json({
-    success: true,
-    users: rows.results || []
-  });
-}
-
-async function adminStats(request, env) {
-  const denied = await adminRequired(request, env);
-
-  if (denied) {
-    return denied;
+  if (
+    existing.user_id !==
+      user.id &&
+    user.role !== "admin"
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Not authorized."
+      },
+      403
+    );
   }
 
-  const result = await env.DB.batch([
-    env.DB.prepare(
-      "SELECT COUNT(*) AS total FROM listings"
-    ),
-    env.DB.prepare(
-      "SELECT COUNT(*) AS approved FROM listings WHERE status = 'approved'"
-    ),
-    env.DB.prepare(
-      "SELECT COUNT(*) AS pending FROM listings WHERE status = 'pending'"
-    ),
-    env.DB.prepare(
-      "SELECT COUNT(*) AS users FROM users"
-    ),
-    env.DB.prepare(
-      "SELECT COUNT(*) AS inquiries FROM inquiries"
-    ),
-    env.DB.prepare(
-      "SELECT COALESCE(SUM(views), 0) AS views FROM listings"
-    )
-  ]);
+  const data =
+    await request.json();
 
-  return json({
-    success: true,
-    stats: {
-      listings: result[0]?.results?.[0]?.total || 0,
-      approved: result[1]?.results?.[0]?.approved || 0,
-      pending: result[2]?.results?.[0]?.pending || 0,
-      users: result[3]?.results?.[0]?.users || 0,
-      inquiries: result[4]?.results?.[0]?.inquiries || 0,
-      views: result[5]?.results?.[0]?.views || 0
+  const fields = [
+    "title",
+    "property_type",
+    "purpose",
+    "price",
+    "location",
+    "bedrooms",
+    "bathrooms",
+    "area",
+    "description",
+    "agent_name",
+    "phone",
+    "email",
+    "owner_type"
+  ];
+
+  const sets = [];
+  const values = [];
+
+  for (
+    const field of fields
+  ) {
+    if (
+      data[field] !==
+      undefined
+    ) {
+      sets.push(
+        `${field} = ?`
+      );
+
+      values.push(
+        [
+          "price",
+          "bedrooms",
+          "bathrooms",
+          "area"
+        ].includes(field)
+          ? Number(
+              data[field]
+            ) || 0
+          : String(
+              data[field] || ""
+            )
+      );
     }
-  });
-}
-
-async function health(env) {
-  let database = false;
-
-  try {
-    await env.DB.prepare(
-      "SELECT 1 AS ok"
-    ).first();
-
-    database = true;
-  } catch {
-    database = false;
   }
+
+  if (
+    data.features !==
+    undefined
+  ) {
+    sets.push(
+      "features = ?"
+    );
+
+    values.push(
+      JSON.stringify(
+        cleanFeatures(
+          data.features
+        )
+      )
+    );
+  }
+
+  if (!sets.length) {
+    return json(
+      {
+        success: false,
+        error:
+          "Nothing to update."
+      },
+      400
+    );
+  }
+
+  sets.push(
+    "updated_at = ?"
+  );
+
+  values.push(now());
+  values.push(idValue);
+
+  await env.DB
+    .prepare(
+      `UPDATE listings
+       SET ${sets.join(
+         ", "
+       )}
+       WHERE id = ?`
+    )
+    .bind(...values)
+    .run();
+
+  const row =
+    await env.DB
+      .prepare(
+        "SELECT * FROM listings WHERE id = ?"
+      )
+      .bind(idValue)
+      .first();
 
   return json({
     success: true,
-    service: "Property Marketplace API",
-    status: database ? "healthy" : "database_error",
-    database,
-    timestamp: now()
+    listing:
+      normalizeListing(row)
   });
 }
 
-async function status(env) {
-  let database = false;
+async function deleteListing(
+  request,
+  env,
+  idValue
+) {
+  const user =
+    await currentUser(
+      request,
+      env
+    );
 
-  try {
-    await env.DB.prepare(
-      "SELECT 1 AS ok"
-    ).first();
-
-    database = true;
-  } catch {
-    database = false;
+  if (!user) {
+    return json(
+      {
+        success: false,
+        error:
+          "Sign in required."
+      },
+      401
+    );
   }
 
+  const existing =
+    await env.DB
+      .prepare(
+        "SELECT * FROM listings WHERE id = ?"
+      )
+      .bind(idValue)
+      .first();
+
+  if (!existing) {
+    return json(
+      {
+        success:
+                    "Property not found."
+      },
+      404
+    );
+  }
+
+  if (
+    existing.user_id !==
+      user.id &&
+    user.role !== "admin"
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Not authorized."
+      },
+      403
+    );
+  }
+
+  const photos =
+    safeJson(
+      existing.photos,
+      []
+    );
+
+  for (
+    const photoUrl of photos
+  ) {
+    const match =
+      String(
+        photoUrl
+      ).match(
+        /\/api\/images\/(.+)$/
+      );
+
+    if (match) {
+      try {
+        await env.IMAGES.delete(
+          decodeURIComponent(
+            match[1]
+          )
+        );
+      } catch {}
+    }
+  }
+
+  await env.DB
+    .prepare(
+      "DELETE FROM listings WHERE id = ?"
+    )
+    .bind(idValue)
+    .run();
+
   return json({
-    success: true,
-    api: "property-marketplace-api",
-    database,
-    max_photos: MAX_PHOTOS,
-    session_days: SESSION_DAYS,
-    timestamp: now()
+    success: true
   });
 }
 
-async function route(request, env) {
-  const url = new URL(request.url);
-  const path = url.pathname.replace(/\/+$/, "") || "/";
-  const method = request.method.toUpperCase();
+async function inquiry(
+  request,
+  env
+) {
+  const data =
+    await request.json();
 
-  if (method === "OPTIONS") {
-    return new Response(null, {
-      status: 204,
-      headers: CORS_HEADERS
+  if (
+    !data.listing_id ||
+    !data.name ||
+    !data.message
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Listing, name and message are required."
+      },
+      400
+    );
+  }
+
+  const listing =
+    await env.DB
+      .prepare(
+        "SELECT id FROM listings WHERE id = ?"
+      )
+      .bind(data.listing_id)
+      .first();
+
+  if (!listing) {
+    return json(
+      {
+        success: false,
+        error:
+          "Property not found."
+      },
+      404
+    );
+  }
+
+  const inquiryId =
+    id();
+
+  await env.DB
+    .prepare(
+      `INSERT INTO inquiries
+       (id, listing_id, name, email, phone, message, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(
+      inquiryId,
+      data.listing_id,
+      String(
+        data.name
+      ).trim(),
+      String(
+        data.email || ""
+      ).trim(),
+      String(
+        data.phone || ""
+      ).trim(),
+      String(
+        data.message
+      ).trim(),
+      now()
+    )
+    .run();
+
+  return json(
+    {
+      success: true,
+      id: inquiryId
+    },
+    201
+  );
+}
+
+async function favorite(
+  request,
+  env,
+  listingId,
+  method
+) {
+  const user =
+    await currentUser(
+      request,
+      env
+    );
+
+  if (!user) {
+    return json(
+      {
+        success: false,
+        error:
+          "Sign in required."
+      },
+      401
+    );
+  }
+
+  if (
+    method ===
+    "DELETE"
+  ) {
+    await env.DB
+      .prepare(
+        `DELETE FROM favorites
+         WHERE user_id = ?
+         AND listing_id = ?`
+      )
+      .bind(
+        user.id,
+        listingId
+      )
+      .run();
+
+    return json({
+      success: true,
+      favorited: false
     });
   }
 
-  try {
-    await ensureDatabase(env);
+  await env.DB
+    .prepare(
+      `INSERT OR IGNORE INTO favorites
+       (user_id, listing_id, created_at)
+       VALUES (?, ?, ?)`
+    )
+    .bind(
+      user.id,
+      listingId,
+      now()
+    )
+    .run();
 
-    if (
-      path === "/" ||
-      path === "/api" ||
-      path === "/api/"
-    ) {
-      return json({
-        success: true,
-        name: "Property Marketplace API",
-        version: "1.0.0",
-        status: "online"
-      });
-    }
+  return json({
+    success: true,
+    favorited: true
+  });
+}
 
-    if (path === "/api/health") {
-      return await health(env);
-    }
+async function admin(
+  request,
+  env,
+  url
+) {
+  const key =
+    env.ADMIN_KEY;
 
-    if (path === "/api/status") {
-      return await status(env);
-    }
+  if (
+    !key ||
+    request.headers.get(
+      "X-Admin-Key"
+    ) !== key
+  ) {
+    return json(
+      {
+        success: false,
+        error:
+          "Unauthorized."
+      },
+      401
+    );
+  }
 
-    if (
-      path === "/api/auth/register" &&
-      method === "POST"
-    ) {
-      return await registerUser(request, env);
-    }
+  const path =
+    url.pathname;
 
-    if (
-      path === "/api/auth/login" &&
-      method === "POST"
-    ) {
-      return await loginUser(request, env);
-    }
+  if (
+    path ===
+    "/api/admin/stats"
+  ) {
+    const [
+      listings,
+      users,
+      inquiries
+    ] =
+      await Promise.all([
+        env.DB
+          .prepare(
+            "SELECT COUNT(*) AS n FROM listings"
+          )
+          .first(),
 
-    if (
-      path === "/api/auth/logout" &&
-      method === "POST"
-    ) {
-      return await logoutUser(request, env);
-    }
+        env.DB
+          .prepare(
+            "SELECT COUNT(*) AS n FROM users"
+          )
+          .first(),
 
-    if (
-      path === "/api/auth/me" &&
-      method === "GET"
-    ) {
-      const user = await getCurrentUser(request, env);
+        env.DB
+          .prepare(
+            "SELECT COUNT(*) AS n FROM inquiries"
+          )
+          .first()
+      ]);
 
-      return json({
-        success: true,
-        authenticated: !!user,
-        user: user
-          ? {
-              id: user.user_id,
-              name: user.name,
-              email: user.email,
-              phone: user.phone,
-              role: user.role
-            }
-          : null
-      });
-    }
+    return json({
+      success: true,
+      stats: {
+        listings:
+          listings.n,
+        users:
+          users.n,
+        inquiries:
+          inquiries.n
+      }
+    });
+  }
 
-    if (
-      path === "/api/listings" &&
-      method === "GET"
-    ) {
-      return await getListings(request, env);
-    }
+  if (
+    path ===
+    "/api/admin/listings"
+  ) {
+    const result =
+      await env.DB
+        .prepare(
+          "SELECT * FROM listings ORDER BY created_at DESC"
+        )
+        .all();
 
-    if (
-      path === "/api/listings" &&
-      method === "POST"
-    ) {
-      return await createListing(request, env);
-    }
+    return json({
+      success: true,
+      listings:
+        (
+          result.results ||
+          []
+        ).map(
+          normalizeListing
+        )
+    });
+  }
 
-    const listingMatch = path.match(
-      /^\/api\/listings\/([^/]+)$/
+  const match =
+    path.match(
+      /^\/api\/admin\/listings\/([^/]+)\/status$/
     );
 
-    if (listingMatch) {
-      const listingId = listingMatch[1];
+  if (
+    match &&
+    request.method ===
+      "PATCH"
+  ) {
+    const data =
+      await request.json();
 
-      if (method === "GET") {
-        return await getListing(
+    if (
+      ![
+        "pending",
+        "approved",
+        "rejected"
+      ].includes(
+        data.status
+      )
+    ) {
+      return json(
+        {
+          success: false,
+          error:
+            "Invalid status."
+        },
+        400
+      );
+    }
+
+    await env.DB
+      .prepare(
+        `UPDATE listings
+         SET status = ?, updated_at = ?
+         WHERE id = ?`
+      )
+      .bind(
+        data.status,
+        now(),
+        match[1]
+      )
+      .run();
+
+    return json({
+      success: true
+    });
+  }
+
+  return json(
+    {
+      success: false,
+      error:
+        "Admin route not found."
+    },
+    404
+  );
+}
+
+export default {
+  async fetch(
+    request,
+    env
+  ) {
+    if (
+      request.method ===
+      "OPTIONS"
+    ) {
+      return new Response(
+        null,
+        {
+          status: 204,
+          headers: CORS
+        }
+      );
+    }
+
+    const url =
+      new URL(
+        request.url
+      );
+
+    try {
+      await ensureDatabase(
+        env
+      );
+
+      if (
+        url.pathname ===
+        "/"
+      ) {
+        return json({
+          success: true,
+          name:
+            "Property Marketplace API",
+          version:
+            "2.0.0",
+          status:
+            "online"
+        });
+      }
+
+      if (
+        url.pathname ===
+        "/health"
+      ) {
+        return json({
+          success: true,
+          status:
+            "healthy",
+          database:
+            !!env.DB,
+          images:
+            !!env.IMAGES
+        });
+      }
+
+      if (
+        url.pathname.startsWith(
+          "/api/images/"
+        )
+      ) {
+        return serveImage(
           request,
           env,
-          listingId
+          url.pathname
         );
       }
 
       if (
-        method === "PUT" ||
-        method === "PATCH"
+        url.pathname ===
+          "/api/auth/register" &&
+        request.method ===
+          "POST"
       ) {
-        return await updateListing(
+        return register(
           request,
-          env,
-          listingId
+          env
         );
       }
 
-      if (method === "DELETE") {
-        return await deleteListing(
+      if (
+        url.pathname ===
+          "/api/auth/login" &&
+        request.method ===
+          "POST"
+      ) {
+        return login(
           request,
-          env,
-          listingId
+          env
         );
       }
-    }
 
-    const inquiryMatch = path.match(
-      /^\/api\/listings\/([^/]+)\/inquiries$/
-    );
+      if (
+        url.pathname ===
+          "/api/auth/me" &&
+        request.method ===
+          "GET"
+      ) {
+        return json({
+          success: true,
+          user:
+            publicUser(
+              await currentUser(
+                request,
+                env
+              )
+            )
+        });
+      }
 
-    if (
-      inquiryMatch &&
-      method === "POST"
-    ) {
-      return await createInquiry(
-        request,
-        env,
-        inquiryMatch[1]
+      if (
+        url.pathname ===
+          "/api/auth/logout" &&
+        request.method ===
+          "POST"
+      ) {
+        const token =
+          getToken(
+            request
+          );
+
+        if (token) {
+          await env.DB
+            .prepare(
+              "DELETE FROM sessions WHERE id = ?"
+            )
+            .bind(token)
+            .run();
+        }
+
+        return json({
+          success: true
+        });
+      }
+
+      if (
+        url.pathname ===
+          "/api/listings" &&
+        request.method ===
+          "GET"
+      ) {
+        return listListings(
+          request,
+          env,
+          url
+        );
+      }
+
+      if (
+        url.pathname ===
+          "/api/listings" &&
+        request.method ===
+          "POST"
+      ) {
+        return createListing(
+          request,
+          env
+        );
+      }
+
+      const listingMatch =
+        url.pathname.match(
+          /^\/api\/listings\/([^/]+)$/
+        );
+
+      if (listingMatch) {
+        if (
+          request.method ===
+          "GET"
+        ) {
+          return getListing(
+            request,
+            env,
+            listingMatch[1]
+          );
+        }
+
+        if (
+          [
+            "PUT",
+            "PATCH"
+          ].includes(
+            request.method
+          )
+        ) {
+          return updateListing(
+            request,
+            env,
+            listingMatch[1]
+          );
+        }
+
+        if (
+          request.method ===
+          "DELETE"
+        ) {
+          return deleteListing(
+            request,
+            env,
+            listingMatch[1]
+          );
+        }
+      }
+
+      if (
+        url.pathname ===
+          "/api/inquiries" &&
+        request.method ===
+          "POST"
+      ) {
+        return inquiry(
+          request,
+          env
+        );
+      }
+
+      const favoriteMatch =
+        url.pathname.match(
+          /^\/api\/favorites\/([^/]+)$/
+        );
+
+      if (
+        favoriteMatch &&
+        [
+          "POST",
+          "DELETE"
+        ].includes(
+          request.method
+        )
+      ) {
+        return favorite(
+          request,
+          env,
+          favoriteMatch[1],
+          request.method
+        );
+      }
+
+      if (
+        url.pathname.startsWith(
+          "/api/admin/"
+        )
+      ) {
+        return admin(
+          request,
+          env,
+          url
+        );
+      }
+
+      return json(
+        {
+          success: false,
+          error:
+            "Route not found."
+        },
+        404
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      return json(
+        {
+          success: false,
+          error:
+            error?.message ||
+            "Server error."
+        },
+        500
       );
     }
-
-    const favoriteMatch = path.match(
-      /^\/api\/listings\/([^/]+)\/favorite$/
-    );
-
-    if (favoriteMatch) {
-      const listingId = favoriteMatch[1];
-
-      if (method === "POST") {
-        return await addFavorite(
-          request,
-          env,
-          listingId
-        );
-      }
-
-      if (method === "DELETE") {
-        return await removeFavorite(
-          request,
-          env,
-          listingId
-        );
-      }
-    }
-
-    if (
-      path === "/api/favorites" &&
-      method === "GET"
-    ) {
-      return await getFavorites(request, env);
-    }
-
-    if (
-      path === "/api/admin/listings" &&
-      method === "GET"
-    ) {
-      return await adminListings(request, env);
-    }
-
-    const adminStatusMatch = path.match(
-      /^\/api\/admin\/listings\/([^/]+)\/status$/
-    );
-
-    if (
-      adminStatusMatch &&
-      method === "PATCH"
-    ) {
-      return await adminSetListingStatus(
-        request,
-        env,
-        adminStatusMatch[1]
-      );
-    }
-
-    if (
-      path === "/api/admin/inquiries" &&
-      method === "GET"
-    ) {
-      return await adminInquiries(request, env);
-    }
-
-    if (
-      path === "/api/admin/users" &&
-      method === "GET"
-    ) {
-      return await adminUsers(request, env);
-    }
-
-    if (
-      path === "/api/admin/stats" &&
-      method === "GET"
-    ) {
-      return await adminStats(request, env);
-    }
-
-    return error("API endpoint not found.", 404);
-
-  } catch (err) {
-    console.error(err);
-
-    return error(
-      "Internal server error.",
-      500,
-      {
-        detail:
-          err?.message ||
-          "Unknown server error."
-      }
-    );
-  }
-}
-
-export default {
-  async fetch(request, env) {
-    return route(request, env);
   }
 };
