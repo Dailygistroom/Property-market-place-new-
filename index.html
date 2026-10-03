@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>PropertyMarket | Find Your Next Property</title>
+
+  <meta
+    name="description"
+    content="Find properties for sale, rent and shortlet. Connect with agents, landlords and developers."
+  >
+
+  <style>
+
+    :root {
+      --navy: #0b1730;
+      --navy2: #101f3d;
+      --gold: #d8b36a;
+      --gold-light: #f2dfb0;
+      --white: #ffffff;
+      --cream: #f8f6f1;
+      --text: #172033;
+      --muted: #6c7482;
+      --border: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    header {
+      background: var(--navy);
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 15px rgba(0,0,0,.15);
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      min-height: 74px;
+      margin: auto;
+      padding: 0 20px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .logo span {
+      color: var(--gold);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    nav a {
+      color: #fff;
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      color: var(--gold);
+    }
+
+    .nav-button {
+      background: var(--gold);
+      color: var(--navy);
+      padding: 11px 17px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+
+    .menu-button {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      background:
+        linear-gradient(
+          rgba(11,23,48,.91),
+          rgba(11,23,48,.91)
+        ),
+        linear-gradient(135deg,#172b50,#071227);
+
+      color: white;
+      padding: 85px 20px 95px;
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px,6vw,60px);
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: auto;
+      color: #dce2ec;
+      font-size: 18px;
+    }
+
+    /* =========================
+       SEARCH
+    ========================= */
+
+    .search-box {
+      background: white;
+      max-width: 1050px;
+      margin: 40px auto 0;
+      padding: 18px;
+      border-radius: 10px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns:
+        1fr
+        1.2fr
+        1.2fr
+        1fr
+        auto;
+
+      gap: 10px;
+    }
+
+    .search-grid input,
+    .search-grid select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: white;
+      outline: none;
+    }
+
+    .search-btn {
+      border: none;
+      background: var(--navy);
+      color: white;
+      padding: 13px 22px;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================
+       GENERAL
+    ========================= */
+
+    .section {
+      padding: 70px 20px;
+    }
+
+    .section-inner {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section-heading {
+      margin-bottom: 30px;
+    }
+
+    .section-heading h2 {
+      color: var(--navy);
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    /* =========================
+       CATEGORIES
+    ========================= */
+
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 18px;
+    }
+
+    .category {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px 20px;
+      text-align: center;
+      transition: .2s;
+    }
+
+    .category:hover {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      box-shadow: 0 8px 25px rgba(0,0,0,.08);
+    }
+
+    .category-icon {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .category h3 {
+      color: var(--navy);
+      margin-bottom: 5px;
+    }
+
+    .category p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* =========================
+       LISTINGS
+    ========================= */
+
+    .listing-section {
+      background: var(--cream);
+    }
+
+    .listing-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 25px;
+    }
+
+    .property-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      overflow: hidden;
+      transition: .25s;
+    }
+
+    .property-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,.09);
+    }
+
+    .property-image {
+      height: 220px;
+      position: relative;
+      overflow: hidden;
+      background: #ddd;
+    }
+
+    .property-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: var(--gold);
+      color: var(--navy);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .property-content {
+      padding: 20px;
+    }
+
+    .property-content h3 {
+      color: var(--navy);
+      font-size: 19px;
+      margin-bottom: 6px;
+    }
+
+    .location {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .price {
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .details {
+      display: flex;
+      gap: 15px;
+      border-top: 1px solid var(--border);
+      padding-top: 13px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* =========================
+       CTA
+    ========================= */
+
+    .cta {
+      background: var(--navy);
+      color: white;
+      padding: 65px 20px;
+      text-align: center;
+    }
+
+    .cta h2 {
+      font-size: 35px;
+      margin-bottom: 12px;
+    }
+
+    .cta p {
+      max-width: 650px;
+      margin: 0 auto 25px;
+      color: #dce2ec;
+    }
+
+    .gold-button {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--navy);
+      padding: 13px 23px;
+      border: none;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================
+       LISTING FORM
+    ========================= */
+
+    #listingFormSection {
+      display: none;
+      background: var(--cream);
+    }
+
+    .form-container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 35px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.07);
+    }
+
+    .form-container h2 {
+      color: var(--navy);
+      margin-bottom: 7px;
+    }
+
+    .form-container > p {
+      color: var(--muted);
+      margin-bottom: 25px;
+    }
+
+    .close-form {
+      float: right;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      color: var(--navy);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .photo-note {
+      margin-top: 4px;
+      padding: 12px;
+      background: #fff8e9;
+      border-left: 4px solid var(--gold);
+      color: #5e5135;
+      font-size: 13px;
+    }
+
+    .submit-listing {
+      width: 100%;
+      margin-top: 25px;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      background: var(--navy);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================
+       LAWFI
+    ========================= */
+
+    .lawfi-section {
+      background: #0a1628;
+      color: white;
+      padding: 80px 20px;
+    }
+
+    .lawfi-container {
+      max-width: 1100px;
+      margin: auto;
+
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .lawfi-label {
+      color: #72b7ed;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .lawfi-section h2 {
+      font-size: 38px;
+      line-height: 1.15;
+      margin-bottom: 18px;
+    }
+
+    .lawfi-section h2 span {
+      color: #72b7ed;
+    }
+
+    .lawfi-section p {
+      color: #d5dce6;
+      margin-bottom: 25px;
+      max-width: 650px;
+    }
+
+    .lawfi-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .lawfi-button {
+      background: #72b7ed;
+      color: #0a1628;
+      padding: 13px 21px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+
+    .lawfi-outline {
+      border: 1px solid #72b7ed;
+      color: #72b7ed;
+      padding: 12px 21px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+
+    .lawfi-services {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .lawfi-service {
+      padding: 18px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+    }
+
+    .lawfi-service strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .lawfi-service small {
+      color: #aeb8c6;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      background: #070f20;
+      color: white;
+      padding: 45px 20px 25px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: auto;
+
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+      flex-wrap: wrap;
+    }
+
+    footer p {
+      color: #aeb6c4;
+      font-size: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: #d5dce6;
+      font-size: 14px;
+    }
+
+    .copyright {
+      max-width: 1200px;
+      margin: 30px auto 0;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      color: #8993a4;
+      font-size: 13px;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media(max-width:850px) {
+
+      nav {
+        display: none;
+        position: absolute;
+        top: 74px;
+        left: 0;
+        width: 100%;
+        background: var(--navy);
+        padding: 20px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      nav.active {
+        display: flex;
+      }
+
+      nav a {
+        padding: 10px 0;
+      }
+
+      .menu-button {
+        display: block;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .search-btn {
+        grid-column: 1 / -1;
+      }
+
+      .categories {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .listing-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .lawfi-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width:600px) {
+
+      .hero {
+        padding: 60px 15px 70px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .search-btn {
+        grid-column: auto;
+      }
+
+      .categories {
+        grid-template-columns: 1fr;
+      }
+
+      .listing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full {
+        grid-column: auto;
+      }
+
+      .form-container {
+        padding: 22px;
+      }
+
+      .lawfi-section h2 {
+        font-size: 30px;
+      }
+
+      .lawfi-services {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+
+  <div class="nav-container">
+
+    <a href="#home" class="logo">
+      Property<span>Market</span>
+    </a>
+
+    <button
+      class="menu-button"
+      onclick="toggleMenu()"
+    >
+      ☰
+    </button>
+
+    <nav id="mainNav">
+
+      <a href="#home">Home</a>
+
+      <a href="#listings">
+        Browse Listings
+      </a>
+
+      <a href="#categories">
+        Buy
+      </a>
+
+      <a href="#categories">
+        Rent
+      </a>
+
+      <a href="#lawfi">
+        Legal Support
+      </a>
+
+      <a
+        href="#listingFormSection"
+        class="nav-button"
+        onclick="openListingForm(event)"
+      >
+        Add Property Listing
+      </a>
+
+    </nav>
+
+  </div>
+
+</header>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<section class="hero" id="home">
+
+  <div class="hero-inner">
+
+    <h1>
+      Find a Place You'll<br>
+      <span>Love to Call Home.</span>
+    </h1>
+
+    <p>
+      Discover properties for sale, rent and investment.
+      Connect with agents, landlords and developers.
+    </p>
+
+
+    <div class="search-box">
+
+      <div class="search-grid">
+
+        <select id="purpose">
+
+          <option value="">
+            Buy or Rent
+          </option>
+
+          <option value="sale">
+            For Sale
+          </option>
+
+          <option value="rent">
+            For Rent
+          </option>
+
+        </select>
+
+
+        <select id="propertyType">
+
+          <option value="">
+            Property Type
+          </option>
+
+          <option value="apartment">
+            Apartment
+          </option>
+
+          <option value="house">
+            House
+          </option>
+
+          <option value="duplex">
+            Duplex
+          </option>
+
+          <option value="land">
+            Land
+          </option>
+
+          <option value="office">
+            Office
+          </option>
+
+          <option value="shop">
+            Shop
+          </option>
+
+          <option value="shortlet">
+            Shortlet
+          </option>
+
+        </select>
+
+
+        <input
+          type="text"
+          id="locationSearch"
+          placeholder="Location"
+        >
+
+
+        <input
+          type="number"
+          id="maxPrice"
+          placeholder="Maximum Price"
+        >
+
+
+        <button
+          class="search-btn"
+          onclick="searchProperties()"
+        >
+          Search
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     CATEGORIES
+========================= -->
+
+<section
+  class="section"
+  id="categories"
+>
+
+  <div class="section-inner">
+
+    <div class="section-heading center">
+
+      <h2>
+        Explore Properties
+      </h2>
+
+      <p>
+        Find the type of property that fits your needs.
+      </p>
+
+    </div>
+
+
+    <div class="categories">
+
+
+      <div class="category">
+
+        <div class="category-icon">
+          🏠
+        </div>
+
+        <h3>
+          For Sale
+        </h3>
+
+        <p>
+          Homes and properties available for purchase.
+        </p>
+
+      </div>
+
+
+      <div class="category">
+
+        <div class="category-icon">
+          🔑
+        </div>
+
+        <h3>
+          For Rent
+        </h3>
+
+        <p>
+          Find apartments, houses and commercial spaces.
+        </p>
+
+      </div>
+
+
+      <div class="category">
+
+        <div class="category-icon">
+          🏗️
+        </div>
+
+        <h3>
+          New Developments
+        </h3>
+
+        <p>
+          Discover new projects and developments.
+        </p>
+
+      </div>
+
+
+      <div class="category">
+
+        <div class="category-icon">
+          🌴
+        </div>
+
+        <h3>
+          Shortlets
+        </h3>
+
+        <p>
+          Find flexible short-term accommodation.
+        </p>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FEATURED LISTINGS
+========================= -->
+
+<section
+  class="section listing-section"
+  id="listings"
+>
+
+  <div class="section-inner">
+
+    <div class="section-heading">
+
+      <h2>
+        Featured Properties
+      </h2>
+
+      <p>
+        Explore properties currently available on the marketplace.
+      </p>
+
+    </div>
+
+
+    <div
+      class="listing-grid"
+      id="listingGrid"
+    >
+
+
+      <!-- PROPERTY 1 -->
+
+      <article
+        class="property-card"
+        data-purpose="sale"
+        data-type="duplex"
+        data-location="lekki"
+        data-price="180000000"
+      >
+
+        <div class="property-image">
+
+          <span class="badge">
+            FOR SALE
+          </span>
+
+          <img
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80"
+            alt="Modern luxury duplex"
+          >
+
+        </div>
+
+
+        <div class="property-content">
+
+          <h3>
+            Modern Luxury Duplex
+          </h3>
+
+          <div class="location">
+            📍 Lekki Phase 1, Lagos
+          </div>
+
+          <div class="price">
+            ₦180,000,000
+          </div>
+
+          <div class="details">
+
+            <span>
+              🛏 5 Beds
+            </span>
+
+            <span>
+              🛁 5 Baths
+            </span>
+
+            <span>
+              📐 650 sqm
+            </span>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- PROPERTY 2 -->
+
+      <article
+        class="property-card"
+        data-purpose="rent"
+        data-type="apartment"
+        data-location="ikoyi"
+        data-price="12000000"
+      >
+
+        <div class="property-image">
+
+          <span class="badge">
+            FOR RENT
+          </span>
+
+          <img
+            src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=80"
+            alt="Luxury apartment"
+          >
+
+        </div>
+
+
+        <div class="property-content">
+
+          <h3>
+            Luxury 3 Bedroom Apartment
+          </h3>
+
+          <div class="location">
+            📍 Ikoyi, Lagos
+          </div>
+
+          <div class="price">
+            ₦12,000,000 / year
+          </div>
+
+          <div class="details">
+
+            <span>
+              🛏 3 Beds
+            </span>
+
+            <span>
+              🛁 4 Baths
+            </span>
+
+            <span>
+              📐 280 sqm
+            </span>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- PROPERTY 3 -->
+
+      <article
+        class="property-card"
+        data-purpose="sale"
+        data-type="house"
+        data-location="ajah"
+        data-price="85000000"
+      >
+
+        <div class="property-image">
+
+          <span class="badge">
+            FOR SALE
+          </span>
+
+          <img
+            src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=80"
+            alt="Contemporary family home"
+          >
+
+        </div>
+
+
+        <div class="property-content">
+
+          <h3>
+            Contemporary Family Home
+          </h3>
+
+          <div class="location">
+            📍 Ajah, Lagos
+          </div>
+
+          <div class="price">
+            ₦85,000,000
+          </div>
+
+          <div class="details">
+
+            <span>
+              🛏 4 Beds
+            </span>
+
+            <span>
+              🛁 4 Baths
+            </span>
+
+            <span>
+              📐 450 sqm
+            </span>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     ADD PROPERTY CTA
+========================= -->
+
+<section class="cta">
+
+  <h2>
+    Have a Property to List?
+  </h2>
+
+  <p>
+    Agents, landlords and developers can showcase
+    their properties to potential buyers and tenants.
+  </p>
+
+  <button
+    class="gold-button"
+    onclick="openListingForm(event)"
+  >
+    Add Property Listing
+  </button>
+
+</section>
+
+
+<!-- =========================
+     PROPERTY LISTING FORM
+     HIDDEN BY DEFAULT
+========================= -->
+
+<section
+  class="section"
+  id="listingFormSection"
+>
+
+  <div class="form-container">
+
+    <button
+      class="close-form"
+      onclick="closeListingForm()"
+    >
+      ×
+    </button>
+
+
+    <h2>
+      Add Property Listing
+    </h2>
+
+    <p>
+      Provide accurate information about the property you want to list.
+    </p>
+
+
+    <form id="propertyForm">
+
+
+      <div class="form-grid">
+
+
+        <div class="form-group full">
+
+          <label>
+            Property Title
+          </label>
+
+          <input
+            type="text"
+            required
+            placeholder="e.g. Luxury 4 Bedroom Duplex"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Property Type
+          </label>
+
+          <select required>
+
+            <option value="">
+              Select property type
+            </option>
+
+            <option>
+              Apartment
+            </option>
+
+            <option>
+              House
+            </option>
+
+            <option>
+              Duplex
+            </option>
+
+            <option>
+              Land
+            </option>
+
+            <option>
+              Office
+            </option>
+
+            <option>
+              Shop
+            </option>
+
+            <option>
+              Shortlet
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Purpose
+          </label>
+
+          <select required>
+
+            <option value="">
+              Select purpose
+            </option>
+
+            <option>
+              For Sale
+            </option>
+
+            <option>
+              For Rent
+            </option>
+
+            <option>
+              Shortlet
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Price
+          </label>
+
+          <input
+            type="number"
+            required
+            placeholder="₦"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Location
+          </label>
+
+          <input
+            type="text"
+            required
+            placeholder="Area / City"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Bedrooms
+          </label>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Number of bedrooms"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Bathrooms
+          </label>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Number of bathrooms"
+          >
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label>
+            Property Description
+          </label>
+
+          <textarea
+            required
+            placeholder="Describe the property..."
+          ></textarea>
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label>
+            Property Features / Amenities
+          </label>
+
+          <input
+            type="text"
+            placeholder="Swimming pool, parking, security, fitted kitchen..."
+          >
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label>
+            Property Photos
+          </label>
+
+          <input
+            type="file"
+            id="propertyPhotos"
+            accept="image/*"
+            multiple
+            onchange="checkPhotos(this)"
+          >
+
+          <div class="photo-note">
+
+            Maximum of
+            <strong>6 photos</strong>
+            can be uploaded for each property listing.
+
+          </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Your Name
+          </label>
+
+          <input
+            type="text"
+            required
+            placeholder="Agent / Landlord / Developer"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>
+            Phone / WhatsApp
+          </label>
+
+          <input
+            type="tel"
+            required
+            placeholder="Phone number"
+          >
+
+        </div>
+
+
+        <div class="form-group full">
+
+          <label>
+            Email Address
+          </label>
+
+          <input
+            type="email"
+            placeholder="Email address"
+          >
+
+        </div>
+
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="submit-listing"
+      >
+        Submit Property Listing
+      </button>
+
+
+    </form>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     LAWFI
+========================= -->
+
+<section
+  class="lawfi-section"
+  id="lawfi"
+>
+
+  <div class="lawfi-container">
+
+
+    <div>
+
+      <div class="lawfi-label">
+        Powered by LAWFi
+      </div>
+
+
+      <h2>
+        Need Legal Support
+        for Your <span>Property?</span>
+      </h2>
+
+
+      <p>
+        Property transactions involve more than finding
+        the right property. Get professional legal support
+        for property documentation, verification, tenancy
+        and other legal needs.
+      </p>
+
+
+      <div class="lawfi-buttons">
+
+        <a
+          href="https://www.lawfi.com.ng"
+          class="lawfi-button"
+        >
+          Talk to a Lawyer
+        </a>
+
+
+        <a
+          href="https://www.lawfi.com.ng"
+          class="lawfi-outline"
+        >
+          Property Legal Support
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <div class="lawfi-services">
+
+
+      <div class="lawfi-service">
+
+        <strong>
+          📄 Property Documents
+        </strong>
+
+        <small>
+          Legal assistance with property documentation.
+        </small>
+
+      </div>
+
+
+      <div class="lawfi-service">
+
+        <strong>
+          🔎 Document Verification
+        </strong>
+
+        <small>
+          Get legal support when reviewing property documents.
+        </small>
+
+      </div>
+
+
+      <div class="lawfi-service">
+
+        <strong>
+          🏠 Tenancy Matters
+        </strong>
+
+        <small>
+          Tenancy agreements and landlord & tenant support.
+        </small>
+
+      </div>
+
+
+      <div class="lawfi-service">
+
+        <strong>
+          ⚖️ Legal Consultation
+        </strong>
+
+        <small>
+          Speak with a lawyer about your property transaction.
+        </small>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+  <div class="footer-inner">
+
+
+    <div>
+
+      <div class="logo">
+        Property<span>Market</span>
+      </div>
+
+      <p>
+        Find. Connect. Move.
+      </p>
+
+    </div>
+
+
+    <div class="footer-links">
+
+      <a href="#home">
+        Home
+      </a>
+
+      <a href="#listings">
+        Listings
+      </a>
+
+      <a href="#categories">
+        Buy
+      </a>
+
+      <a href="#categories">
+        Rent
+      </a>
+
+      <a href="#lawfi">
+        Legal Support
+      </a>
+
+      <a href="https://www.lawfi.com.ng">
+        LAWFi
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <div class="copyright">
+
+    © 2026 PropertyMarket.
+    All rights reserved.
+
+  </div>
+
+</footer>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+
+/* MOBILE MENU */
+
+function toggleMenu() {
+
+  const nav =
+    document.getElementById("mainNav");
+
+  nav.classList.toggle("active");
+
+}
+
+
+/* OPEN LISTING FORM */
+
+function openListingForm(event) {
+
+  if (event) {
+    event.preventDefault();
+  }
+
+  const formSection =
+    document.getElementById("listingFormSection");
+
+  formSection.style.display = "block";
+
+  formSection.scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+
+/* CLOSE LISTING FORM */
+
+function closeListingForm() {
+
+  const formSection =
+    document.getElementById("listingFormSection");
+
+  formSection.style.display = "none";
+
+  document
+    .getElementById("listings")
+    .scrollIntoView({
+      behavior: "smooth"
+    });
+
+}
+
+
+/* MAXIMUM 6 PHOTOS */
+
+function checkPhotos(input) {
+
+  if (input.files.length > 6) {
+
+    alert(
+      "You can upload a maximum of 6 photos per property."
+    );
+
+    input.value = "";
+
+  }
+
+}
+
+
+/* SEARCH */
+
+function searchProperties() {
+
+  const purpose =
+    document
+      .getElementById("purpose")
+      .value
+      .toLowerCase();
+
+
+  const type =
+    document
+      .getElementById("propertyType")
+      .value
+      .toLowerCase();
+
+
+  const location =
+    document
+      .getElementById("locationSearch")
+      .value
+      .toLowerCase();
+
+
+  const maxPrice =
+    Number(
+      document
+        .getElementById("maxPrice")
+        .value
+    );
+
+
+  const cards =
+    document.querySelectorAll(
+      ".property-card"
+    );
+
+
+  let found = 0;
+
+
+  cards.forEach(card => {
+
+    const cardPurpose =
+      card.dataset.purpose;
+
+
+    const cardType =
+      card.dataset.type;
+
+
+    const cardLocation =
+      card.dataset.location;
+
+
+    const cardPrice =
+      Number(card.dataset.price);
+
+
+    let show = true;
+
+
+    if (
+      purpose &&
+      cardPurpose !== purpose
+    ) {
+      show = false;
+    }
+
+
+    if (
+      type &&
+      cardType !== type
+    ) {
+      show = false;
+    }
+
+
+    if (
+      location &&
+      !cardLocation.includes(location)
+    ) {
+      show = false;
+    }
+
+
+    if (
+      maxPrice &&
+      cardPrice > maxPrice
+    ) {
+      show = false;
+    }
+
+
+    card.style.display =
+    show ? "block" : "none";
+
+if (show) {
+    found++;
+}
+});
+
+document
+    .getElementById("listings")
+    .scrollIntoView({
+        behavior: "smooth"
+    });
+
+if (found === 0) {
+    setTimeout(() => {
+        alert(
+            "No matching properties found. Try adjusting your search."
+        );
+    }, 500);
+}
+}
+
+/* FORM SUBMISSION */
+document
+    .getElementById("propertyForm")
+    .addEventListener(
+        "submit",
+        function(event) {
+            event.preventDefault();
+
+            alert(
+                "Your property listing has been submitted for review."
+            );
+
+            this.reset();
+        }
+    );
+
+</script>
+
+</body>
+</html>
