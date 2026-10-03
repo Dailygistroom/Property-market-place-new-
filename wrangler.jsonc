@@ -1,0 +1,12 @@
+{
+  "name": "property-marketplace-api",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-03",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "property-marketplace-db",
+      "database_id": "390a392b-f7f9-4296-96b0-d435ffae054d"
+    }
+  ]
+}
