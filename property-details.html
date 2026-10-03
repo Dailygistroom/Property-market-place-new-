@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Details | PropertyMarket</title>
+
+  <style>
+    :root {
+      --navy: #0b1730;
+      --navy2: #101f3d;
+      --gold: #d8b36a;
+      --gold-light: #f2dfb0;
+      --white: #ffffff;
+      --cream: #f8f6f1;
+      --text: #172033;
+      --muted: #6c7482;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 18px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .logo span {
+      color: var(--gold);
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 22px;
+      font-size: 14px;
+    }
+
+    .back {
+      display: block;
+      max-width: 1200px;
+      margin: 25px auto 10px;
+      padding: 0 20px;
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: 230px;
+      object-fit: cover;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .gallery .main-image {
+      grid-row: span 2;
+      height: 470px;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(11, 23, 48, 0.05);
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--gold-light);
+      color: var(--navy);
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 34px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .location {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .price {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      margin-bottom: 25px;
+    }
+
+    .stats strong {
+      display: block;
+      color: var(--navy);
+      font-size: 18px;
+    }
+
+    .stats span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    h2 {
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .feature {
+      background: var(--cream);
+      padding: 9px 13px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .agent h3 {
+      color: var(--navy);
+      margin-bottom: 5px;
+    }
+
+    .agent p {
+      color: var(--muted);
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 14px;
+      border-radius: 9px;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .whatsapp {
+      background: #1f9d55;
+      color: white;
+    }
+
+    .legal {
+      background: var(--navy);
+      color: white;
+    }
+
+    .lawfi {
+      background: var(--navy);
+      color: white;
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 20px;
+    }
+
+    .lawfi small {
+      color: var(--gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .lawfi h2 {
+      color: white;
+      margin-top: 8px;
+    }
+
+    .lawfi p {
+      color: #d9deea;
+      margin-bottom: 18px;
+    }
+
+    footer {
+      background: var(--navy);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 50px;
+    }
+
+    @media (max-width: 800px) {
+      nav {
+        display: none;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+
+      .gallery {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .gallery .main-image {
+        grid-column: span 2;
+        grid-row: auto;
+        height: 300px;
+      }
+
+      .gallery img {
+        height: 160px;
+      }
+
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Property<span>Market</span></div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#listings">Browse Listings</a>
+    <a href="index.html#listingFormSection">Add Property Listing</a>
+    <a href="https://www.lawfi.com.ng">LawFi</a>
+  </nav>
+</header>
+
+<a class="back" href="index.html">← Back to listings</a>
+
+<main class="container">
+
+  <section class="gallery">
+
+    <img
+      class="main-image"
+      src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"
+      alt="Modern luxury duplex">
+
+    <img
+      src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=700&q=80"
+      alt="Luxury property interior">
+
+    <img
+      src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=700&q=80"
+      alt="Modern property exterior">
+
+    <img
+      src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=700&q=80"
+      alt="Luxury living room">
+
+    <img
+      src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=700&q=80"
+      alt="Luxury bedroom">
+
+  </section>
+
+  <section class="content">
+
+    <div>
+
+      <div class="card">
+
+        <span class="tag">FOR SALE</span>
+
+        <h1>Modern Luxury Duplex</h1>
+
+        <p class="location">Lekki Phase 1, Lagos</p>
+
+        <div class="price">₦180,000,000</div>
+
+        <div class="stats">
+
+          <div>
+            <strong>5</strong>
+            <span>Bedrooms</span>
+          </div>
+
+          <div>
+            <strong>5</strong>
+            <span>Bathrooms</span>
+          </div>
+
+          <div>
+            <strong>650 sqm</strong>
+            <span>Property Size</span>
+          </div>
+
+        </div>
+
+        <h2>Property Description</h2>
+
+        <p>
+          Experience modern luxury in this beautifully designed five-bedroom
+          duplex located in the heart of Lekki Phase 1. The property combines
+          spacious interiors, contemporary architecture and premium finishes
+          to create a comfortable and elegant family home.
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Features & Amenities</h2>
+
+        <div class="features">
+
+          <span class="feature">5 Bedrooms</span>
+          <span class="feature">5 Bathrooms</span>
+          <span class="feature">Fitted Kitchen</span>
+          <span class="feature">Parking Space</span>
+          <span class="feature">Security</span>
+          <span class="feature">Boys Quarters</span>
+          <span class="feature">Serviced Area</span>
+          <span class="feature">Modern Finishes</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <aside>
+
+      <div class="card agent">
+
+        <h2>Contact Agent</h2>
+
+        <h3>PropertyMarket Agent</h3>
+
+        <p>Property Agent / Representative</p>
+
+        <a
+          class="btn whatsapp"
+          href="https://wa.me/2348000000000">
+          WhatsApp Agent
+        </a>
+
+        <a
+          class="btn legal"
+          href="https://www.lawfi.com.ng">
+          Get Legal Support
+        </a>
+
+      </div>
+
+      <div class="lawfi">
+
+        <small>LawFi</small>
+
+        <h2>Need Legal Support?</h2>
+
+        <p>
+          Protect your property transaction with professional legal support
+          from LawFi.
+        </p>
+
+        <a
+          class="btn legal"
+          href="https://www.lawfi.com.ng">
+          Talk to a Lawyer
+        </a>
+
+      </div>
+
+    </aside>
+
+  </section>
+
+</main>
+
+<footer>
+
+  <div class="logo">Property<span>Market</span></div>
+
+  <p>Find a place you'll love to call home.</p>
+
+</footer>
+
+</body>
+</html>
