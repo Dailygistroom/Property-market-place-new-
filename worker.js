@@ -3,7 +3,7 @@ export default {
     const url = new URL(request.url);
 
     // =========================
-    // DATABASE SETUP
+    // SUBSCRIPTION DATABASE SETUP
     // =========================
     try {
       await env.DB.batch([
@@ -13,7 +13,7 @@ export default {
             name TEXT NOT NULL UNIQUE,
             price INTEGER NOT NULL,
             listing_limit INTEGER NOT NULL,
-            boost_credits INTEGER,
+            boost_credits INTEGER DEFAULT 0,
             unlimited_boosts INTEGER DEFAULT 0,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
           )
@@ -63,9 +63,8 @@ export default {
       ]);
 
       // =========================
-      // INSERT SUBSCRIPTION PLANS
+      // SUBSCRIPTION PLANS
       // =========================
-
       const plans = [
         ["Starter", 15000, 25, 5, 0],
         ["Professional", 25000, 40, 10, 0],
@@ -79,7 +78,13 @@ export default {
         await env.DB
           .prepare(`
             INSERT OR IGNORE INTO subscription_plans
-            (name, price, listing_limit, boost_credits, unlimited_boosts)
+            (
+              name,
+              price,
+              listing_limit,
+              boost_credits,
+              unlimited_boosts
+            )
             VALUES (?, ?, ?, ?, ?)
           `)
           .bind(...plan)
