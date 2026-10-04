@@ -2405,20 +2405,156 @@ function searchProperties() {
 
 document
   .getElementById("propertyForm")
-  .addEventListener(
-    "submit",
-    function(event) {
+  .addEventListener("submit", async function(event) {
 
-      event.preventDefault();
+    event.preventDefault();
 
-      alert(
-        "Your property listing has been submitted for review."
+    const form = this;
+
+    const fields =
+      form.querySelectorAll(
+        "input, select, textarea"
       );
 
-      this.reset();
+    const title =
+      fields[0].value.trim();
+
+    const propertyType =
+      fields[1].value.trim();
+
+    const purpose =
+      fields[2].value.trim();
+
+    const price =
+      Number(fields[3].value || 0);
+
+    const location =
+      fields[4].value.trim();
+
+    const bedrooms =
+      Number(fields[5].value || 0);
+
+    const bathrooms =
+      Number(fields[6].value || 0);
+
+    const description =
+      fields[7].value.trim();
+
+    const amenities =
+      fields[8].value.trim();
+
+
+    if (
+      !title ||
+      !propertyType ||
+      !purpose ||
+      !price ||
+      !location ||
+      !description
+    ) {
+
+      alert(
+        "Please complete all required property details."
+      );
+
+      return;
+    }
+
+
+    const submitButton =
+      form.querySelector(
+        'button[type="submit"]'
+      );
+
+
+    submitButton.disabled = true;
+
+    submitButton.textContent =
+      "Submitting...";
+
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/properties",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+
+              title: title,
+
+              description: description,
+
+              category:
+                purpose.toLowerCase(),
+
+              property_type:
+                propertyType.toLowerCase(),
+
+              price: price,
+
+              location: location,
+
+              bedrooms: bedrooms,
+
+              bathrooms: bathrooms,
+
+              area: "",
+
+              amenities: amenities
+
+            })
+          }
+        );
+
+
+      const result =
+        await response.json();
+
+
+      if (!response.ok || !result.ok) {
+
+        throw new Error(
+          result.error ||
+          "Unable to submit property."
+        );
+
+      }
+
+
+      alert(
+        "Property listing submitted successfully!"
+      );
+
+
+      form.reset();
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "We could not submit your property right now. Please try again."
+      );
+
+    } finally {
+
+      submitButton.disabled = false;
+
+      submitButton.textContent =
+        "Submit Property Listing";
 
     }
-  );
+
+  });
 
 </script>
 
