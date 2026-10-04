@@ -54,8 +54,6 @@
       font: inherit;
     }
 
-    /* HEADER */
-
     header {
       background: var(--navy);
       color: white;
@@ -119,8 +117,6 @@
       cursor: pointer;
     }
 
-    /* HERO */
-
     .hero {
       background:
         linear-gradient(rgba(11,23,48,.88), rgba(11,23,48,.92)),
@@ -169,8 +165,6 @@
       margin-bottom: 35px;
     }
 
-    /* SEARCH */
-
     .search-box {
       background: white;
       border-radius: 14px;
@@ -209,7 +203,130 @@
       cursor: pointer;
     }
 
-    /* MAIN */
+    /* LOCATION PICKER */
+
+    .location-picker {
+      position: relative;
+      min-width: 0;
+    }
+
+    .location-field {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+      color: var(--text);
+      background: white;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .location-field:hover,
+    .location-field:focus {
+      border-color: var(--gold);
+    }
+
+    .location-arrow {
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .location-card {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: min(390px, calc(100vw - 36px));
+      max-height: 430px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 18px 45px rgba(11,23,48,.22);
+      overflow: hidden;
+      z-index: 5000;
+      display: none;
+      text-align: left;
+    }
+
+    .location-card.open {
+      display: block;
+    }
+
+    .location-card-header {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--navy);
+    }
+
+    .location-back,
+    .location-close {
+      border: 0;
+      background: transparent;
+      color: var(--navy);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .location-back:hover,
+    .location-close:hover {
+      background: #f3f4f6;
+    }
+
+    .location-search-wrap {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .location-search-wrap input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    .location-search-wrap input:focus {
+      border-color: var(--gold);
+    }
+
+    .location-list {
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    .location-option {
+      width: 100%;
+      border: 0;
+      background: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .location-option:hover {
+      background: #f8f6f1;
+    }
+
+    .location-option span:last-child {
+      color: var(--muted);
+      font-size: 18px;
+    }
 
     .section {
       max-width: 1250px;
@@ -239,8 +356,6 @@
       max-width: 650px;
       margin-top: 8px;
     }
-
-    /* CATEGORIES */
 
     .categories {
       display: grid;
@@ -277,8 +392,6 @@
       color: var(--muted);
       font-size: 14px;
     }
-
-    /* LISTINGS */
 
     .listings {
       display: grid;
@@ -378,7 +491,24 @@
       color: var(--navy);
     }
 
-    /* LISTING CTA */
+    .no-results {
+      display: none;
+      grid-column: 1 / -1;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 35px;
+      text-align: center;
+    }
+
+    .no-results h3 {
+      color: var(--navy);
+      margin-bottom: 5px;
+    }
+
+    .no-results p {
+      color: var(--muted);
+    }
 
     .listing-cta {
       background:
@@ -404,6 +534,17 @@
       margin: auto auto 25px;
     }
 
+    .free-listings-badge {
+      display: inline-block;
+      margin-bottom: 25px;
+      padding: 9px 16px;
+      border: 1px solid rgba(216,179,106,.55);
+      border-radius: 30px;
+      color: var(--gold-light);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
     .gold-button {
       display: inline-block;
       background: var(--gold);
@@ -414,8 +555,6 @@
       border: 0;
       cursor: pointer;
     }
-
-    /* LISTING FORM */
 
     #listingFormSection {
       display: none;
@@ -494,8 +633,6 @@
       cursor: pointer;
     }
 
-    /* LAWFI */
-
     .lawfi-section {
       background: #0a1628;
       color: white;
@@ -561,8 +698,6 @@
       font-weight: 800;
     }
 
-    /* FOOTER */
-
     footer {
       background: #071124;
       color: white;
@@ -594,10 +729,7 @@
       color: var(--gold);
     }
 
-    /* MOBILE */
-
     @media (max-width: 900px) {
-
       .menu-button {
         display: block;
       }
@@ -644,7 +776,6 @@
     }
 
     @media (max-width: 600px) {
-
       .header-inner {
         padding: 15px 18px;
       }
@@ -719,13 +850,20 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+
+      .location-card {
+        width: 100%;
+        max-height: 420px;
+      }
+
+      .location-list {
+        max-height: 320px;
+      }
     }
   </style>
 </head>
 
 <body>
-
-<!-- HEADER -->
 
 <header>
   <div class="header-inner">
@@ -734,9 +872,7 @@
       Property<span>Market</span>
     </a>
 
-    <button class="menu-button" onclick="toggleMenu()">
-      ☰
-    </button>
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
 
     <nav id="mainNav">
       <a href="index.html">Home</a>
@@ -748,18 +884,15 @@
       <a
         href="#listingFormSection"
         class="nav-button"
-        onclick="openListingForm
-        Form(event)">
-  Add Property Listing
-</a>
+        onclick="openListingForm(event)"
+      >
+        Add Property Listing
+      </a>
+    </nav>
 
-</nav>
-
-</div>
+  </div>
 </header>
 
-
-<!-- HERO -->
 
 <section class="hero">
 
@@ -779,6 +912,7 @@
       in locations that matter to you.
     </p>
 
+
     <div class="search-box">
 
       <select id="purpose">
@@ -786,6 +920,7 @@
         <option value="sale">For Sale</option>
         <option value="rent">For Rent</option>
       </select>
+
 
       <select id="propertyType">
         <option value="">Property Type</option>
@@ -796,19 +931,139 @@
         <option value="commercial">Commercial</option>
       </select>
 
-      <input
-        type="text"
-        id="location"
-        placeholder="Location e.g. Lekki">
 
-      <input
-        type="number"
-        id="maxPrice"
-        placeholder="Maximum Price">
+      <!-- LOCATION PICKER -->
+
+      <div class="location-picker" id="locationPicker">
+
+        <input
+          type="hidden"
+          id="location"
+          value=""
+        >
+
+        <button
+          type="button"
+          class="location-field"
+          id="locationField"
+          aria-expanded="false"
+        >
+
+          <span id="locationValue">
+            Location
+          </span>
+
+          <span class="location-arrow">
+            ⌄
+          </span>
+
+        </button>
+
+
+        <div
+          class="location-card"
+          id="locationCard"
+        >
+
+          <div class="location-card-header">
+
+            <button
+              type="button"
+              id="locationBack"
+              class="location-back"
+            >
+              ‹
+            </button>
+
+            <strong id="locationTitle">
+              Location
+            </strong>
+
+            <button
+              type="button"
+              id="locationClose"
+              class="location-close"
+            >
+              ×
+            </button>
+
+          </div>
+
+
+          <div class="location-search-wrap">
+
+            <input
+              type="search"
+              id="locationSearch"
+              placeholder="Search location"
+              autocomplete="off"
+            >
+
+          </div>
+
+
+          <div
+            class="location-list"
+            id="locationList"
+          >
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- MAXIMUM PRICE -->
+
+      <select id="maxPrice">
+
+        <option value="">
+          No Limit
+        </option>
+
+        <option value="5000000">
+          ₦5M
+        </option>
+
+        <option value="10000000">
+          ₦10M
+        </option>
+
+        <option value="20000000">
+          ₦20M
+        </option>
+
+        <option value="50000000">
+          ₦50M
+        </option>
+
+        <option value="100000000">
+          ₦100M
+        </option>
+
+        <option value="200000000">
+          ₦200M
+        </option>
+
+        <option value="500000000">
+          ₦500M
+        </option>
+
+        <option value="1000000000">
+          ₦1 Billion
+        </option>
+
+        <option value="2000000000">
+          ₦2 Billion
+        </option>
+
+      </select>
+
 
       <button
         class="search-btn"
-        onclick="searchProperties()">
+        onclick="searchProperties()"
+      >
         Search
       </button>
 
@@ -819,47 +1074,60 @@
 </section>
 
 
-<!-- CATEGORIES -->
-
 <section class="section" id="categories">
 
   <div class="section-heading">
 
-    <small>Explore Properties</small>
+    <small>
+      Explore Properties
+    </small>
 
-    <h2>Find What You're Looking For</h2>
+    <h2>
+      Find What You're Looking For
+    </h2>
 
     <p>
-      Explore properties across different categories and discover
-      your next opportunity.
+      Explore properties across different categories and discover your next opportunity.
     </p>
 
   </div>
+
 
   <div class="categories">
 
     <a href="#listings" class="category">
       <div class="category-icon">🏠</div>
       <h3>For Sale</h3>
-      <p>Homes and properties available for purchase.</p>
+      <p>
+        Homes and properties available for purchase.
+      </p>
     </a>
+
 
     <a href="#listings" class="category">
       <div class="category-icon">🔑</div>
       <h3>For Rent</h3>
-      <p>Quality homes and apartments available for rent.</p>
+      <p>
+        Quality homes and apartments available for rent.
+      </p>
     </a>
+
 
     <a href="#listings" class="category">
       <div class="category-icon">🏗️</div>
       <h3>New Developments</h3>
-      <p>Discover new projects and developments.</p>
+      <p>
+        Discover new projects and developments.
+      </p>
     </a>
+
 
     <a href="#listings" class="category">
       <div class="category-icon">✨</div>
       <h3>Shortlets</h3>
-      <p>Comfortable short-stay properties and apartments.</p>
+      <p>
+        Comfortable short-stay properties and apartments.
+      </p>
     </a>
 
   </div>
@@ -867,15 +1135,17 @@
 </section>
 
 
-<!-- FEATURED LISTINGS -->
-
 <section class="section" id="listings">
 
   <div class="section-heading">
 
-    <small>Featured Listings</small>
+    <small>
+      Featured Listings
+    </small>
 
-    <h2>Properties Worth Exploring</h2>
+    <h2>
+      Properties Worth Exploring
+    </h2>
 
     <p>
       Browse selected properties currently displayed on the marketplace.
@@ -883,17 +1153,17 @@
 
   </div>
 
+
   <div class="listings" id="propertyGrid">
 
-
-    <!-- PROPERTY 1 -->
 
     <article
       class="property-card"
       data-purpose="sale"
       data-type="duplex"
       data-location="lekki"
-      data-price="180000000">
+      data-price="180000000"
+    >
 
       <div class="property-image">
 
@@ -903,13 +1173,17 @@
 
         <img
           src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=85"
-          alt="Modern luxury duplex">
+          alt="Modern luxury duplex"
+        >
 
       </div>
 
+
       <div class="property-body">
 
-        <h3>Modern Luxury Duplex</h3>
+        <h3>
+          Modern Luxury Duplex
+        </h3>
 
         <div class="location">
           Lekki Phase 1, Lagos
@@ -927,7 +1201,8 @@
 
         <a
           href="property-details.html"
-          class="view-property">
+          class="view-property"
+        >
           View Property
         </a>
 
@@ -936,14 +1211,13 @@
     </article>
 
 
-    <!-- PROPERTY 2 -->
-
     <article
       class="property-card"
       data-purpose="rent"
       data-type="apartment"
       data-location="ikoyi"
-      data-price="12000000">
+      data-price="12000000"
+    >
 
       <div class="property-image">
 
@@ -953,13 +1227,17 @@
 
         <img
           src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1000&q=85"
-          alt="Luxury apartment">
+          alt="Luxury apartment"
+        >
 
       </div>
 
+
       <div class="property-body">
 
-        <h3>Luxury 3 Bedroom Apartment</h3>
+        <h3>
+          Luxury 3 Bedroom Apartment
+        </h3>
 
         <div class="location">
           Ikoyi, Lagos
@@ -977,7 +1255,8 @@
 
         <a
           href="property-details.html"
-          class="view-property">
+          class="view-property"
+        >
           View Property
         </a>
 
@@ -986,14 +1265,13 @@
     </article>
 
 
-    <!-- PROPERTY 3 -->
-
     <article
       class="property-card"
       data-purpose="sale"
       data-type="house"
       data-location="ajah"
-      data-price="85000000">
+      data-price="85000000"
+    >
 
       <div class="property-image">
 
@@ -1003,13 +1281,17 @@
 
         <img
           src="https://images.unsplash.com/photo-1600585152915-d208bec867a1?auto=format&fit=crop&w=1000&q=85"
-          alt="Contemporary family home">
+          alt="Contemporary family home"
+        >
 
       </div>
 
+
       <div class="property-body">
 
-        <h3>Contemporary Family Home</h3>
+        <h3>
+          Contemporary Family Home
+        </h3>
 
         <div class="location">
           Ajah, Lagos
@@ -1027,7 +1309,8 @@
 
         <a
           href="property-details.html"
-          class="view-property">
+          class="view-property"
+        >
           View Property
         </a>
 
@@ -1036,9 +1319,14 @@
     </article>
 
 
-    <div class="no-results" id="noResults">
+    <div
+      class="no-results"
+      id="noResults"
+    >
 
-      <h3>No properties found</h3>
+      <h3>
+        No properties found
+      </h3>
 
       <p>
         Try changing your search filters or location.
@@ -1051,22 +1339,33 @@
 </section>
 
 
-<!-- ADD PROPERTY CTA -->
-
 <section class="section">
 
   <div class="listing-cta">
 
-    <h2>Have a Property to List?</h2>
+    <h2>
+      Have a Property to List?
+    </h2>
+
+
+    <div class="free-listings-badge">
+      ✓ 3 FREE ACTIVE LISTINGS
+    </div>
+
 
     <p>
-      Agents, landlords and developers can submit properties
-      to be reviewed and listed on the marketplace.
+      Agents, landlords and developers can list their properties
+      on PropertyMarket. Your first 3 active property listings
+      are completely free. Paid listing options begin from the
+      4th active listing, with additional opportunities to promote
+      your property and reach more serious buyers and renters.
     </p>
+
 
     <button
       class="gold-button"
-      onclick="openListingForm()">
+      onclick="openListingForm()"
+    >
       Add Property Listing
     </button>
 
@@ -1075,24 +1374,28 @@
 </section>
 
 
-<!-- PROPERTY LISTING FORM -->
-
 <section
   class="section"
-  id="listingFormSection">
+  id="listingFormSection"
+>
 
   <div class="section-heading">
 
-    <small>Property Listing</small>
+    <small>
+      Property Listing
+    </small>
 
-    <h2>Add Your Property</h2>
+    <h2>
+      Add Your Property
+    </h2>
 
     <p>
-      Provide the property details below. Your listing will be
-      submitted for review.
+      Provide the property details below.
+      Your listing will be submitted for review.
     </p>
 
   </div>
+
 
   <div class="form-card">
 
@@ -1103,19 +1406,24 @@
 
         <div class="form-group full">
 
-          <label>Property Title</label>
+          <label>
+            Property Title
+          </label>
 
           <input
             type="text"
             required
-            placeholder="e.g. Luxury 4 Bedroom Duplex">
+            placeholder="e.g. Luxury 4 Bedroom Duplex"
+          >
 
         </div>
 
 
         <div class="form-group">
 
-          <label>Property Type</label>
+          <label>
+            Property Type
+          </label>
 
           <select required>
 
@@ -1123,11 +1431,25 @@
               Select property type
             </option>
 
-            <option>House</option>
-            <option>Duplex</option>
-            <option>Apartment</option>
-            <option>Land</option>
-            <option>Commercial Property</option>
+            <option>
+              House
+            </option>
+
+            <option>
+              Duplex
+            </option>
+
+            <option>
+              Apartment
+            </option>
+
+            <option>
+              Land
+            </option>
+
+            <option>
+              Commercial Property
+            </option>
 
           </select>
 
@@ -1136,7 +1458,9 @@
 
         <div class="form-group">
 
-          <label>Purpose</label>
+          <label>
+            Purpose
+          </label>
 
           <select required>
 
@@ -1144,9 +1468,17 @@
               Select purpose
             </option>
 
-            <option>For Sale</option>
-            <option>For Rent</option>
-            <option>Shortlet</option>
+            <option>
+              For Sale
+            </option>
+
+            <option>
+              For Rent
+            </option>
+
+            <option>
+              Shortlet
+            </option>
 
           </select>
 
@@ -1155,82 +1487,103 @@
 
         <div class="form-group">
 
-          <label>Price</label>
+          <label>
+            Price
+          </label>
 
           <input
             type="number"
             required
-            placeholder="Enter price">
+            placeholder="Enter price"
+          >
 
         </div>
 
 
         <div class="form-group">
 
-          <label>Location</label>
+          <label>
+            Location
+          </label>
 
           <input
             type="text"
             required
-            placeholder="e.g. Lekki Phase 1">
+            placeholder="e.g. Lekki Phase 1"
+          >
 
         </div>
 
 
         <div class="form-group">
 
-          <label>Bedrooms</label>
+          <label>
+            Bedrooms
+          </label>
 
           <input
             type="number"
             min="0"
-            placeholder="Number of bedrooms">
+            placeholder="Number of bedrooms"
+          >
 
         </div>
 
 
         <div class="form-group">
 
-          <label>Bathrooms</label>
+          <label>
+            Bathrooms
+          </label>
 
           <input
             type="number"
             min="0"
-            placeholder="Number of bathrooms">
+            placeholder="Number of bathrooms"
+          >
 
         </div>
 
 
         <div class="form-group full">
 
-          <label>Property Description</label>
+          <label>
+            Property Description
+          </label>
 
           <textarea
             required
-            placeholder="Describe the property..."></textarea>
+            placeholder="Describe the property..."
+          ></textarea>
 
         </div>
 
 
         <div class="form-group full">
 
-          <label>Features / Amenities</label>
+          <label>
+            Features / Amenities
+          </label>
 
           <textarea
-            placeholder="e.g. Swimming pool, parking, security, BQ..."></textarea>
+            placeholder="e.g. Swimming pool, parking, security, BQ..."
+          ></textarea>
 
         </div>
 
 
         <div class="form-group full">
 
-          <label>Property Photos</label>
+          <label>
+            Property Photos
+          </label>
 
           <input
             type="file"
             accept="image/*"
             multiple
-            onchange="checkPhotos(this)">
+            onchange="checkPhotos(this)"
+          >
 
           <div class="photo-note">
             Maximum 6 photos can be uploaded for one property.
@@ -1241,35 +1594,44 @@
 
         <div class="form-group">
 
-          <label>Your Name</label>
+          <label>
+            Your Name
+          </label>
 
           <input
             type="text"
             required
-            placeholder="Agent / Landlord / Developer">
+            placeholder="Agent / Landlord / Developer"
+          >
 
         </div>
 
 
         <div class="form-group">
 
-          <label>Phone / WhatsApp</label>
+          <label>
+            Phone / WhatsApp
+          </label>
 
           <input
             type="tel"
             required
-            placeholder="Phone or WhatsApp number">
+            placeholder="Phone or WhatsApp number"
+          >
 
         </div>
 
 
         <div class="form-group full">
 
-          <label>Email</label>
+          <label>
+            Email
+          </label>
 
           <input
             type="email"
-            placeholder="Email address">
+            placeholder="Email address"
+          >
 
         </div>
 
@@ -1280,14 +1642,16 @@
 
         <button
           type="submit"
-          class="gold-button">
+          class="gold-button"
+        >
           Submit Property Listing
         </button>
 
         <button
           type="button"
           class="close-button"
-          onclick="closeListingForm()">
+          onclick="closeListingForm()"
+        >
           Cancel
         </button>
 
@@ -1300,11 +1664,10 @@
 </section>
 
 
-<!-- LAWFI -->
-
 <section
   class="lawfi-section"
-  id="lawfi">
+  id="lawfi"
+>
 
   <div class="lawfi-inner">
 
@@ -1317,14 +1680,13 @@
     </h2>
 
     <p>
-      Get professional legal assistance with your property
-      transaction through LawFi. From document verification
-      to tenancy matters and property due diligence.
+      Get professional legal assistance with your property transaction
+      through LawFi. From document verification to tenancy matters
+      and property due diligence.
     </p>
 
 
     <div class="lawfi-services">
-
 
       <div class="lawfi-service">
 
@@ -1383,7 +1745,8 @@
     <a
       href="https://www.lawfi.com.ng"
       class="lawfi-button"
-      target="_blank">
+      target="_blank"
+    >
       Talk to a Lawyer
     </a>
 
@@ -1391,8 +1754,6 @@
 
 </section>
 
-
-<!-- FOOTER -->
 
 <footer>
 
@@ -1423,7 +1784,8 @@
 
       <a
         href="#listingFormSection"
-        onclick="openListingForm(event)">
+        onclick="openListingForm(event)"
+      >
         Add Property
       </a>
 
@@ -1438,9 +1800,9 @@
 </footer>
 
 
-<!-- JAVASCRIPT -->
-
 <script>
+
+/* MOBILE MENU */
 
 function toggleMenu() {
 
@@ -1451,6 +1813,8 @@ function toggleMenu() {
 
 }
 
+
+/* LISTING FORM */
 
 function openListingForm(event) {
 
@@ -1491,6 +1855,8 @@ function closeListingForm() {
 }
 
 
+/* PHOTO LIMIT */
+
 function checkPhotos(input) {
 
   if (input.files.length > 6) {
@@ -1506,97 +1872,522 @@ function checkPhotos(input) {
 }
 
 
+/* PROPERTY MARKET LOCATION SYSTEM */
+
+const marketplaceLocations = {
+
+  "Lagos State": [
+
+    "Lekki",
+    "Lekki Phase 1",
+    "Sangotedo",
+    "Ajah",
+    "Ikoyi",
+    "Victoria Island",
+    "Ikeja",
+    "Yaba",
+    "Surulere",
+    "Chevron",
+    "Magodo",
+    "Maryland",
+    "Gbagada",
+    "Banana Island",
+    "Ikorodu",
+    "Epe",
+    "Alimosho",
+    "Ojo",
+    "Festac",
+    "Badagry"
+
+  ],
+
+
+  "Abuja (FCT)": [
+
+    "Maitama",
+    "Wuse",
+    "Wuse 2",
+    "Asokoro",
+    "Garki",
+    "Gwarinpa",
+    "Jabi",
+    "Life Camp",
+    "Katampe",
+    "Lugbe",
+    "Kubwa",
+    "Utako",
+    "Karu",
+    "Kado",
+    "Apo",
+    "Galadimawa"
+
+  ],
+
+
+  "Rivers State": [
+
+    "Port Harcourt",
+    "GRA",
+    "Old GRA",
+    "New GRA",
+    "Trans Amadi",
+    "Woji",
+    "Rumuola",
+    "Rumuokoro",
+    "Rumueme",
+    "Rumuodara",
+    "Eliozu",
+    "Ada George",
+    "Abonnema Wharf",
+    "Peter Odili Road",
+    "Choba",
+    "Omagwa"
+
+  ]
+
+};
+
+
+const locationPicker =
+  document.getElementById(
+    "locationPicker"
+  );
+
+
+const locationField =
+  document.getElementById(
+    "locationField"
+  );
+
+
+const locationCard =
+  document.getElementById(
+    "locationCard"
+  );
+
+
+const locationList =
+  document.getElementById(
+    "locationList"
+  );
+
+
+const locationTitle =
+  document.getElementById(
+    "locationTitle"
+  );
+
+
+const locationSearch =
+  document.getElementById(
+    "locationSearch"
+  );
+
+
+const locationBack =
+  document.getElementById(
+    "locationBack"
+  );
+
+
+const locationClose =
+  document.getElementById(
+    "locationClose"
+  );
+
+
+const locationValue =
+  document.getElementById(
+    "locationValue"
+  );
+
+
+let selectedState = null;
+
+let locationLevel = "states";
+
+
+function openLocationPicker() {
+
+  locationCard.classList.add("open");
+
+  locationField.setAttribute(
+    "aria-expanded",
+    "true"
+  );
+
+  locationLevel = "states";
+
+  selectedState = null;
+
+  locationTitle.textContent =
+    "Location";
+
+  locationSearch.value = "";
+
+  renderStates();
+
+}
+
+
+function closeLocationPicker() {
+
+  locationCard.classList.remove("open");
+
+  locationField.setAttribute(
+    "aria-expanded",
+    "false"
+  );
+
+}
+
+
+function renderStates(search = "") {
+
+  locationList.innerHTML = "";
+
+  const query =
+    search.toLowerCase().trim();
+
+
+  Object.keys(marketplaceLocations)
+
+    .filter(function(state) {
+
+      return state
+        .toLowerCase()
+        .includes(query);
+
+    })
+
+    .forEach(function(state) {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+
+      button.className =
+        "location-option";
+
+
+      button.innerHTML = `
+        <span>${state}</span>
+        <span>›</span>
+      `;
+
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          selectedState = state;
+
+          locationLevel = "areas";
+
+          locationTitle.textContent =
+            state;
+
+          locationSearch.value = "";
+
+          renderAreas(state);
+
+        }
+      );
+
+
+      locationList.appendChild(button);
+
+    });
+
+}
+
+
+function renderAreas(
+  state,
+  search = ""
+) {
+
+  locationList.innerHTML = "";
+
+  const query =
+    search.toLowerCase().trim();
+
+
+  marketplaceLocations[state]
+
+    .filter(function(area) {
+
+      return area
+        .toLowerCase()
+        .includes(query);
+
+    })
+
+    .forEach(function(area) {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+
+      button.className =
+        "location-option";
+
+
+      button.innerHTML = `
+        <span>${area}</span>
+        <span>›</span>
+      `;
+
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          document
+            .getElementById("location")
+            .value =
+              area.toLowerCase();
+
+          locationValue.textContent =
+            area;
+
+          closeLocationPicker();
+
+        }
+      );
+
+
+      locationList.appendChild(button);
+
+    });
+
+}
+
+
+locationField.addEventListener(
+  "click",
+  function() {
+
+    if (
+      locationCard.classList.contains("open")
+    ) {
+
+      closeLocationPicker();
+
+    } else {
+
+      openLocationPicker();
+
+    }
+
+  }
+);
+
+
+locationClose.addEventListener(
+  "click",
+  function() {
+
+    closeLocationPicker();
+
+  }
+);
+
+
+locationBack.addEventListener(
+  "click",
+  function() {
+
+    if (
+      locationLevel === "areas"
+    ) {
+
+      locationLevel = "states";
+
+      selectedState = null;
+
+      locationTitle.textContent =
+        "Location";
+
+      locationSearch.value = "";
+
+      renderStates();
+
+    }
+
+  }
+);
+
+
+locationSearch.addEventListener(
+  "input",
+  function() {
+
+    if (
+      locationLevel === "states"
+    ) {
+
+      renderStates(
+        locationSearch.value
+      );
+
+    } else if (
+      selectedState
+    ) {
+
+      renderAreas(
+        selectedState,
+        locationSearch.value
+      );
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "click",
+  function(event) {
+
+    if (
+      !locationPicker.contains(
+        event.target
+      )
+    ) {
+
+      closeLocationPicker();
+
+    }
+
+  }
+);
+
+
+/* PROPERTY SEARCH */
+
 function searchProperties() {
 
   const purpose =
-    document.getElementById("purpose")
+    document
+      .getElementById("purpose")
       .value
       .toLowerCase();
+
 
   const type =
-    document.getElementById("propertyType")
+    document
+      .getElementById("propertyType")
       .value
       .toLowerCase();
 
+
   const location =
-    document.getElementById("location")
+    document
+      .getElementById("location")
       .value
       .toLowerCase()
       .trim();
 
+
   const maxPrice =
     Number(
-      document.getElementById("maxPrice").value
+      document
+        .getElementById("maxPrice")
+        .value
     ) || Infinity;
 
 
   const cards =
-    document.querySelectorAll(".property-card");
+    document.querySelectorAll(
+      ".property-card"
+    );
+
 
   const noResults =
-    document.getElementById("noResults");
+    document.getElementById(
+      "noResults"
+    );
+
 
   let matches = 0;
 
 
-  cards.forEach(function(card) {
+  cards.forEach(
+    function(card) {
 
-    const cardPurpose =
-      card.dataset.purpose;
-
-    const cardType =
-      card.dataset.type;
-
-    const cardLocation =
-      card.dataset.location;
-
-    const cardPrice =
-      Number(card.dataset.price);
+      const cardPurpose =
+        card.dataset.purpose;
 
 
-    const purposeMatch =
-      !purpose ||
-      cardPurpose === purpose;
-
-    const typeMatch =
-      !type ||
-      cardType === type;
-
-    const locationMatch =
-      !location ||
-      cardLocation.includes(location);
-
-    const priceMatch =
-      cardPrice <= maxPrice;
+      const cardType =
+        card.dataset.type;
 
 
-    if (
-      purposeMatch &&
-      typeMatch &&
-      locationMatch &&
-      priceMatch
-    ) {
+      const cardLocation =
+        card.dataset.location;
 
-      card.style.display = "block";
 
-      matches++;
+      const cardPrice =
+        Number(
+          card.dataset.price
+        );
 
-    } else {
 
-      card.style.display = "none";
+      const purposeMatch =
+        !purpose ||
+        cardPurpose === purpose;
+
+
+      const typeMatch =
+        !type ||
+        cardType === type;
+
+
+      const locationMatch =
+        !location ||
+        cardLocation.includes(location) ||
+        location.includes(cardLocation);
+
+
+      const priceMatch =
+        cardPrice <= maxPrice;
+
+
+      if (
+        purposeMatch &&
+        typeMatch &&
+        locationMatch &&
+        priceMatch
+      ) {
+
+        card.style.display =
+          "block";
+
+        matches++;
+
+      } else {
+
+        card.style.display =
+          "none";
+
+      }
 
     }
-
-  });
+  );
 
 
   if (matches === 0) {
 
-    noResults.style.display = "block";
+    noResults.style.display =
+      "block";
 
   } else {
 
-    noResults.style.display = "none";
+    noResults.style.display =
+      "none";
 
   }
 
@@ -1609,6 +2400,8 @@ function searchProperties() {
 
 }
 
+
+/* FORM SUBMISSION */
 
 document
   .getElementById("propertyForm")
