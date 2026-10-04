@@ -1875,13 +1875,12 @@ function checkPhotos(input) {
 /* PROPERTY MARKET LOCATION SYSTEM */
 
 const marketplaceLocations = {
-
   "Lagos State": [
     "Lekki",
     "Lekki Phase 1",
     "Ikoyi",
     "Old Ikoyi",
-    "Parkview Estate, Ikoyi",
+    "Parkview Estate",
     "Banana Island",
     "Victoria Island",
     "Oniru",
@@ -1990,7 +1989,6 @@ const marketplaceLocations = {
     "Palmgrove",
     "Fadeyi"
   ],
-
   "Abuja (FCT)": [
     "Maitama",
     "Wuse",
@@ -2035,7 +2033,6 @@ const marketplaceLocations = {
     "Airport Road",
     "Gwarinpa Estate"
   ],
-
   "Rivers State": [
     "Port Harcourt",
     "GRA",
@@ -2087,156 +2084,143 @@ const marketplaceLocations = {
     "Ignatius Ajuru",
     "University of Port Harcourt / Aluu axis"
   ]
-
 };
 
-
-const locationPicker =
-  document.getElementById(
-    "locationPicker"
-  );
-
-
-const locationField =
-  document.getElementById(
-    "locationField"
-  );
-
-
-const locationCard =
-  document.getElementById(
-    "locationCard"
-  );
-
-
-const locationList =
-  document.getElementById(
-    "locationList"
-  );
-
-
-const locationTitle =
-  document.getElementById(
-    "locationTitle"
-  );
-
-
-const locationSearch =
-  document.getElementById(
-    "locationSearch"
-  );
-
-
-const locationBack =
-  document.getElementById(
-    "locationBack"
-  );
-
-
-const locationClose =
-  document.getElementById(
-    "locationClose"
-  );
-
-
-const locationValue =
-  document.getElementById(
-    "locationValue"
-  );
-
+const locationPicker = document.getElementById("locationPicker");
+const locationField = document.getElementById("locationField");
+const locationCard = document.getElementById("locationCard");
+const locationList = document.getElementById("locationList");
+const locationTitle = document.getElementById("locationTitle");
+const locationSearch = document.getElementById("locationSearch");
+const locationBack = document.getElementById("locationBack");
+const locationClose = document.getElementById("locationClose");
+const locationValue = document.getElementById("locationValue");
+const locationInput = document.getElementById("location");
 
 let selectedState = null;
-
 let locationLevel = "states";
 
-
 function openLocationPicker() {
-
   locationCard.classList.add("open");
-
-  locationField.setAttribute(
-    "aria-expanded",
-    "true"
-  );
-
+  locationField.setAttribute("aria-expanded", "true");
   locationLevel = "states";
-
   selectedState = null;
-
-  locationTitle.textContent =
-    "Location";
-
+  locationTitle.textContent = "Location";
   locationSearch.value = "";
-
   renderStates();
-
 }
-
 
 function closeLocationPicker() {
-
   locationCard.classList.remove("open");
-
-  locationField.setAttribute(
-    "aria-expanded",
-    "false"
-  );
-
+  locationField.setAttribute("aria-expanded", "false");
 }
 
-
-function renderStates(search = "") {
-
+function renderStates(search) {
+  search = (search || "").toLowerCase().trim();
   locationList.innerHTML = "";
 
-  const query =
-    search.toLowerCase().trim();
-
-
   Object.keys(marketplaceLocations)
-
-    .filter(function(state) {
-
-      return state
-        .toLowerCase()
-        .includes(query);
-
+    .filter(function (state) {
+      return state.toLowerCase().includes(search);
     })
-
-    .forEach(function(state) {
-
-      const button =
-        document.createElement("button");
-
+    .forEach(function (state) {
+      var button = document.createElement("button");
       button.type = "button";
+      button.className = "location-option";
+      button.innerHTML =
+        "<span>" + state + "</span><span>›</span>";
 
-      button.className =
-        "location-option";
+      button.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectedState = state;
+        locationLevel = "areas";
+        locationTitle.textContent = state;
+        locationSearch.value = "";
+        renderAreas(state);
+      });
 
+      locationList.appendChild(button);
+    });
+}
 
-      button.innerHTML = `
-        <span>${state}</span>
-        <span>›</span>
-      `;
+function renderAreas(state, search) {
+  search = (search || "").toLowerCase().trim();
+  locationList.innerHTML = "";
 
+  var areas = marketplaceLocations[state];
+  if (!areas || !Array.isArray(areas)) {
+    return;
+  }
 
-      button.addEventListener(
-        "click",
-        function() {
+  areas
+    .filter(function (area) {
+      return area.toLowerCase().includes(search);
+    })
+    .forEach(function (area) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "location-option";
+      button.innerHTML =
+        "<span>" + area + "</span><span>›</span>";
 
-          selectedState = state;
+      button.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        locationInput.value = area.toLowerCase();
+        locationValue.textContent = area;
+        closeLocationPicker();
+      });
 
-          locationLevel = "areas";
+      locationList.appendChild(button);
+    });
+}
 
-          locationTitle.textContent =
-            state;
+locationField.addEventListener("click", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (locationCard.classList.contains("open")) {
+    closeLocationPicker();
+  } else {
+    openLocationPicker();
+  }
+});
 
-          locationSearch.value = "";
+locationClose.addEventListener("click", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  closeLocationPicker();
+});
 
-          renderAreas(state);
+locationBack.addEventListener("click", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (locationLevel === "areas") {
+    locationLevel = "states";
+    selectedState = null;
+    locationTitle.textContent = "Location";
+    locationSearch.value = "";
+    renderStates();
+  }
+});
 
-        }
-      );
+locationSearch.addEventListener("input", function () {
+  if (locationLevel === "states") {
+    renderStates(locationSearch.value);
+  } else if (selectedState) {
+    renderAreas(selectedState, locationSearch.value);
+  }
+});
+
+locationSearch.addEventListener("click", function (e) {
+  e.stopPropagation();
+});
+
+document.addEventListener("click", function (event) {
+  if (!locationPicker.contains(event.target)) {
+    closeLocationPicker();
+  }
+});
 
 
       locationList.appendChild(button);
