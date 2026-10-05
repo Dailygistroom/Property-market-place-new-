@@ -641,6 +641,159 @@ async function handleForgotPassword(request, env) {
     message: genericMessage,
   });
 }
+async function handleResetPassword(request, env) {
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid JSON request.",
+    }, 400);
+  }
+
+  const token = String(body.token || "").trim();
+  const password = String(
+    body.password || body.new_password || ""
+  );
+
+  if (!token || !password) {
+    return json({
+      success: false,
+      message: "Reset token and new password are required.",
+    }, 400);
+  }
+
+  if (password.length < 8) {
+    return json({
+      success: false,
+      message: "Password must be at least 8 characters.",
+    }, 400);
+  }
+
+  if (!env.PASSWORD_RESET_SECRET) {
+    return json({
+      success: false,
+      message: "Password reset is not configured.",
+    }, 500);
+  }
+
+  const parts = token.split(".");
+
+  if (parts.length !== 2) {
+    return json({
+      success: false,
+      message: "Invalid or expired reset link.",
+    }, 400);
+  }
+
+  const [payload, signature] = parts;
+
+  let validSignature = false;
+
+  try {
+    validSignature = await verifyResetSignature(
+      payload,
+      signature,
+      env.PASSWORD_RESET_SECRET
+    );
+  } catch {
+    validSignature = false;
+  }
+
+  if (!validSignature) {
+    return json({
+      success: false,
+      message: "Invalid or expired reset link.",
+    }, 400);
+  }
+
+  let resetData;
+
+  try {
+    resetData = JSON.parse(
+      new TextDecoder().decode(
+        fromBase64Url(payload)
+      )
+    );
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid or expired reset link.",
+    }, 400);
+  }
+
+  if (
+    !resetData.uid ||
+    !resetData.exp ||
+    !resetData.pwd ||
+    Date.now() > Number(resetData.exp)
+  ) {
+    return json({
+      success: false,
+      message: "This reset link has expired.",
+    }, 400);
+  }
+
+  const user = await env.DB.prepare(`
+    SELECT id, password_hash
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+  `)
+    .bind(Number(resetData.uid))
+    .first();
+
+  if (!user) {
+    return json({
+      success: false,
+      message: "Invalid or expired reset link.",
+    }, 400);
+  }
+
+  const currentPasswordDigest =
+    await sha256Base64Url(user.password_hash);
+
+  if (currentPasswordDigest !== resetData.pwd) {
+    return json({
+      success: false,
+      message: "This reset link is no longer valid.",
+    }, 400);
+  }
+
+  const { salt, hash } =
+    await hashPassword(password);
+
+  const passwordHash = `${salt}:${hash}`;
+
+  await env.DB.prepare(`
+    UPDATE users
+    SET
+      password_hash = ?,
+      updated_at = ?
+    WHERE id = ?
+  `)
+    .bind(
+      passwordHash,
+      now(),
+      user.id
+    )
+    .run();
+
+  await env.DB.prepare(`
+    DELETE FROM auth_sessions
+    WHERE user_id = ?
+  `)
+    .bind(user.id)
+    .run();
+
+  return json({
+    success: true,
+    message:
+      "Password reset successfully. You can now log in with your new password.",
+  });
+}
 async function handleLogout(request, env) {
   const token = getBearerToken(request);
 
