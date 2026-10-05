@@ -515,7 +515,132 @@ async function handleLogin(request, env) {
     user: publicUser(user),
   });
 }
+async function handleForgotPassword(request, env) {
+  const genericMessage =
+    "If an account exists for this email, a password reset link has been sent.";
 
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json(
+      {
+        success: false,
+        message: "Invalid JSON request.",
+      },
+      400
+    );
+  }
+
+  const email = normalizeEmail(body.email);
+
+  if (!email) {
+    return json({
+      success: true,
+      message: genericMessage,
+    });
+  }
+
+  const user = await env.DB.prepare(`
+    SELECT id, full_name, email, password_hash
+    FROM users
+    WHERE email = ?
+    LIMIT 1
+  `).bind(email).first();
+
+  if (!user) {
+    return json({
+      success: true,
+      message: genericMessage,
+    });
+  }
+
+  if (!env.RESEND_API_KEY || !env.PASSWORD_RESET_SECRET) {
+    console.error("Password reset email is not configured.");
+    return json({
+      success: true,
+      message: genericMessage,
+    });
+  }
+
+  try {
+    const token = await createPasswordResetToken(user, env);
+
+    const resetUrl = new URL(
+      "/reset-password.html",
+      request.url
+    );
+
+    resetUrl.searchParams.set("token", token);
+
+    const response = await fetch(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "JOVA Property Marketplace <onboarding@resend.dev>",
+          to: [user.email],
+          subject: "Reset your JOVA password",
+          html: `
+            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+              <h2 style="color:#0b1735">Reset your JOVA password</h2>
+
+              <p>Hello ${user.full_name || "there"},</p>
+
+              <p>
+                We received a request to reset your
+                JOVA Property Marketplace password.
+              </p>
+
+              <p>
+                <a
+                  href="${resetUrl.href}"
+                  style="
+                    display:inline-block;
+                    padding:12px 18px;
+                    background:#d9b66f;
+                    color:#0b1735;
+                    text-decoration:none;
+                    border-radius:8px;
+                    font-weight:700;
+                  "
+                >
+                  Reset Password
+                </a>
+              </p>
+
+              <p>This link expires in 30 minutes.</p>
+
+              <p>
+                If you did not request this password reset,
+                you can safely ignore this email.
+              </p>
+            </div>
+          `,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        "Resend password reset error:",
+        await response.text()
+      );
+    }
+  } catch (error) {
+    console.error("Password reset error:", error);
+  }
+
+  return json({
+    success: true,
+    message: genericMessage,
+  });
+}
 async function handleLogout(request, env) {
   const token = getBearerToken(request);
 
