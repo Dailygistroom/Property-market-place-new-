@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Your JOVA Account</title>
+  <meta name="description" content="Create your JOVA account to list and manage properties.">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #071426;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 42px;
+      letter-spacing: 3px;
+      color: #d6b36a;
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: #aeb8c6;
+      font-size: 15px;
+    }
+
+    .card {
+      background: #0d1d32;
+      border: 1px solid rgba(214, 179, 106, 0.25);
+      border-radius: 20px;
+      padding: 28px 22px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 25px;
+    }
+
+    .subtitle {
+      color: #aeb8c6;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 7px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #314258;
+      background: #08172a;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #d6b36a;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      border: 0;
+      border-radius: 10px;
+      background: #d6b36a;
+      color: #071426;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(180, 45, 45, 0.15);
+      border: 1px solid rgba(220, 80, 80, 0.35);
+      color: #ffb4b4;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(45, 150, 90, 0.15);
+      border: 1px solid rgba(80, 190, 120, 0.35);
+      color: #a9f0c5;
+    }
+
+    .login {
+      text-align: center;
+      margin-top: 20px;
+      color: #aeb8c6;
+      font-size: 14px;
+    }
+
+    .login a {
+      color: #d6b36a;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      color: #aeb8c6;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <div class="brand">
+      <h1>JOVA</h1>
+      <p>Find. List. Move.</p>
+    </div>
+
+    <section class="card">
+
+      <h2>Create your account</h2>
+
+      <p class="subtitle">
+        Create an account to list and manage properties on JOVA.
+      </p>
+
+      <form id="registerForm">
+
+        <label for="name">Full Name</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          placeholder="Enter your full name"
+          required
+        >
+
+        <label for="email">Email Address</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+        >
+
+        <label for="phone">Phone Number</label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="08012345678"
+          required
+        >
+
+        <label for="role">Account Type</label>
+        <select id="role" name="role" required>
+          <option value="">Select account type</option>
+          <option value="agent">Agent</option>
+          <option value="landlord">Landlord</option>
+          <option value="developer">Developer</option>
+        </select>
+
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Create a password"
+          minlength="8"
+          required
+        >
+
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          placeholder="Repeat your password"
+          minlength="8"
+          required
+        >
+
+        <label for="referral">Referral Code <span style="color:#7f8b9b;">(optional)</span></label>
+        <input
+          id="referral"
+          name="referral"
+          type="text"
+          maxlength="8"
+          placeholder="e.g. PM7K2A9X"
+          style="text-transform:uppercase;"
+        >
+
+        <button type="submit" id="submitBtn">
+          Create JOVA Account
+        </button>
+
+      </form>
+
+      <div id="message" class="message"></div>
+
+      <div class="login">
+        Already have an account?
+        <a href="/login.html">Log in</a>
+      </div>
+
+      <a href="/" class="back">← Back to JOVA</a>
+
+    </section>
+
+  </main>
+
+  <script>
+    const API_BASE =
+      "https://property-marketplace-api.dailygistroom.workers.dev";
+
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("message");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      message.className = "message";
+      message.textContent = "";
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const role = document.getElementById("role").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+      const referral =
+        document.getElementById("referral").value.trim().toUpperCase();
+
+      if (password !== confirmPassword) {
+        message.className = "message error";
+        message.textContent = "Your passwords do not match.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating account...";
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/auth/register`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              name,
+              email,
+              phone,
+              role,
+              password,
+              referral_code: referral || null
+            })
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+            data.message ||
+            "Unable to create your account."
+          );
+        }
+
+        message.className = "message success";
+        message.textContent =
+          "Your JOVA account has been created successfully. Redirecting...";
+
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1200);
+
+      } catch (error) {
+        message.className = "message error";
+        message.textContent =
+          error.message || "Something went wrong. Please try again.";
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create JOVA Account";
+      }
+    });
+  </script>
+
+</body>
+</html>
