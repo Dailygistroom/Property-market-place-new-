@@ -151,7 +151,87 @@ function fromBase64(value) {
 
   return bytes;
 }
+function toBase64Url(bytes) {
+  return toBase64(bytes)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
 
+function fromBase64Url(value) {
+  let base64 = String(value)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+
+  return fromBase64(base64);
+}
+
+async function sha256Base64Url(value) {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(String(value))
+  );
+
+  return toBase64Url(new Uint8Array(digest));
+}
+
+async function signResetPayload(payload, secret) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(payload)
+  );
+
+  return toBase64Url(new Uint8Array(signature));
+}
+
+async function verifyResetSignature(payload, signature, secret) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+
+  return crypto.subtle.verify(
+    "HMAC",
+    key,
+    fromBase64Url(signature),
+    new TextEncoder().encode(payload)
+  );
+}
+
+async function createPasswordResetToken(user, env) {
+  const payloadObject = {
+    uid: Number(user.id),
+    exp: Date.now() + 30 * 60 * 1000,
+    pwd: await sha256Base64Url(user.password_hash),
+  };
+
+  const payload = toBase64Url(
+    new TextEncoder().encode(JSON.stringify(payloadObject))
+  );
+
+  const signature = await signResetPayload(
+    payload,
+    env.PASSWORD_RESET_SECRET
+  );
+
+  return `${payload}.${signature}`;
+}
 function publicUser(user) {
   return {
     id: user.id,
