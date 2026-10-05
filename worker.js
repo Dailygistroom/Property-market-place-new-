@@ -2536,7 +2536,19 @@ async function routeApi(request, env) {
   ) {
     return handleLogin(request, env);
   }
+if (
+  path === "/api/auth/forgot-password" &&
+  method === "POST"
+) {
+  return handleForgotPassword(request, env);
+}
 
+if (
+  path === "/api/auth/reset-password" &&
+  method === "POST"
+) {
+  return handleResetPassword(request, env);
+}
   if (
     path === "/api/auth/logout" &&
     method === "POST"
