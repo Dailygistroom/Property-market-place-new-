@@ -95,26 +95,23 @@
     }
 
     .password-wrap input {
-      padding-right: 48px;
+      padding-right: 50px;
     }
 
     .toggle-password {
       position: absolute;
-      right: 0;
-      top: 0;
-      width: 45px;
-      height: 100%;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
       margin: 0;
       padding: 0;
       border: 0;
       background: transparent;
-      color: #aeb8c6;
+      color: #fff;
       font-size: 18px;
       cursor: pointer;
-    }
-
-    .toggle-password:hover {
-      background: transparent;
     }
 
     .referral-toggle {
@@ -123,7 +120,6 @@
       color: #d6b36a;
       font-size: 13px;
       cursor: pointer;
-      text-align: left;
     }
 
     .referral-box {
@@ -226,36 +222,31 @@
         <label for="name">Full Name</label>
         <input
           id="name"
-          name="name"
           type="text"
-          placeholder="Enter your full name"
           autocomplete="name"
-          required
+          placeholder="Enter your full name"
         >
 
         <label for="email">Email Address</label>
         <input
           id="email"
-          name="email"
-          type="email"
-          placeholder="you@example.com"
+          type="text"
+          inputmode="email"
           autocomplete="email"
-          required
+          placeholder="you@example.com"
         >
 
         <label for="phone">Phone Number</label>
         <input
           id="phone"
-          name="phone"
           type="tel"
           inputmode="tel"
-          placeholder=""
           autocomplete="tel"
-          required
+          placeholder=""
         >
 
         <label for="role">Account Type</label>
-        <select id="role" name="role" required>
+        <select id="role">
           <option value="">Select account type</option>
           <option value="agent">Agent</option>
           <option value="landlord">Landlord</option>
@@ -263,16 +254,15 @@
         </select>
 
         <label for="password">Password</label>
+
         <div class="password-wrap">
           <input
             id="password"
-            name="password"
             type="password"
-            placeholder="At least 8 characters"
-            minlength="8"
             autocomplete="new-password"
-            required
+            placeholder="At least 8 characters"
           >
+
           <button
             type="button"
             class="toggle-password"
@@ -282,16 +272,15 @@
         </div>
 
         <label for="confirmPassword">Confirm Password</label>
+
         <div class="password-wrap">
           <input
             id="confirmPassword"
-            name="confirmPassword"
             type="password"
-            placeholder="Repeat your password"
-            minlength="8"
             autocomplete="new-password"
-            required
+            placeholder="Repeat your password"
           >
+
           <button
             type="button"
             class="toggle-password"
@@ -312,7 +301,6 @@
         <div class="referral-box" id="referralBox">
           <input
             id="referral"
-            name="referral"
             type="text"
             maxlength="8"
             placeholder="Enter referral code"
@@ -339,9 +327,6 @@
   </main>
 
   <script>
-    const API_BASE =
-      "https://property-marketplace-api.dailygistroom.workers.dev";
-
     const form = document.getElementById("registerForm");
     const message = document.getElementById("message");
     const submitBtn = document.getElementById("submitBtn");
@@ -349,23 +334,26 @@
     /* Password visibility */
     document.querySelectorAll(".toggle-password").forEach(button => {
       button.addEventListener("click", function () {
-        const target = document.getElementById(this.dataset.target);
+        const input = document.getElementById(this.dataset.target);
 
-        if (target.type === "password") {
-          target.type = "text";
+        if (input.type === "password") {
+          input.type = "text";
           this.textContent = "🙈";
           this.setAttribute("aria-label", "Hide password");
         } else {
-          target.type = "password";
+          input.type = "password";
           this.textContent = "👁️";
           this.setAttribute("aria-label", "Show password");
         }
       });
     });
 
-    /* Referral field */
-    const referralToggle = document.getElementById("referralToggle");
-    const referralBox = document.getElementById("referralBox");
+    /* Referral */
+    const referralToggle =
+      document.getElementById("referralToggle");
+
+    const referralBox =
+      document.getElementById("referralBox");
 
     referralToggle.addEventListener("click", () => {
       referralBox.classList.toggle("show");
@@ -376,50 +364,61 @@
           : "+ Have a referral code?";
     });
 
-    referralToggle.addEventListener("keydown", event => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        referralToggle.click();
-      }
-    });
-
     function showError(text) {
       message.className = "message error";
       message.textContent = text;
     }
 
     function normalizePhone(value) {
-      let phone = value.trim().replace(/[\s\-()]/g, "");
+      let phone = String(value || "")
+        .trim()
+        .replace(/[\s\-()]/g, "");
 
       if (phone.startsWith("+234")) {
-        phone = "0" + phone.slice(4);
-      } else if (phone.startsWith("234")) {
-        phone = "0" + phone.slice(3);
+        phone = "0" + phone.substring(4);
+      }
+
+      if (phone.startsWith("234")) {
+        phone = "0" + phone.substring(3);
       }
 
       return phone;
     }
 
     form.addEventListener("submit", async function (event) {
+
       event.preventDefault();
 
       message.className = "message";
       message.textContent = "";
 
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = normalizePhone(
-        document.getElementById("phone").value
-      );
-      const role = document.getElementById("role").value;
-      const password = document.getElementById("password").value;
+      const name =
+        document.getElementById("name").value.trim();
+
+      const email =
+        document.getElementById("email").value.trim();
+
+      const phone =
+        normalizePhone(
+          document.getElementById("phone").value
+        );
+
+      const role =
+        document.getElementById("role").value;
+
+      const password =
+        document.getElementById("password").value;
+
       const confirmPassword =
         document.getElementById("confirmPassword").value;
 
       const referral =
-        document.getElementById("referral").value.trim().toUpperCase();
+        document.getElementById("referral").value
+          .trim()
+          .toUpperCase();
 
-      /* Basic validation */
+      /* Our own validation */
+
       if (!name) {
         showError("Please enter your full name.");
         return;
@@ -432,7 +431,7 @@
 
       if (!/^0\d{10}$/.test(phone)) {
         showError(
-          "Please enter a valid Nigerian phone number, e.g. 09027384749."
+          "Please enter a valid Nigerian phone number."
         );
         return;
       }
@@ -443,7 +442,9 @@
       }
 
       if (password.length < 8) {
-        showError("Your password must be at least 8 characters.");
+        showError(
+          "Your password must be at least 8 characters."
+        );
         return;
       }
 
@@ -456,48 +457,72 @@
       submitBtn.textContent = "Creating account...";
 
       try {
+
+        /*
+          IMPORTANT:
+          The registration page and API are on the
+          same Cloudflare Worker, so use a relative API path.
+        */
+
         const response = await fetch(
-          `${API_BASE}/api/auth/register`,
+          "/api/auth/register",
           {
             method: "POST",
+
             headers: {
               "Content-Type": "application/json"
             },
+
             credentials: "include",
+
             body: JSON.stringify({
-              name,
-              email,
-              phone,
-              role,
-              password,
+              name: name,
+              email: email,
+              phone: phone,
+              role: role,
+              password: password,
               referral_code: referral || null
             })
           }
         );
 
-        const data = await response.json();
+        let data = {};
+
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
 
         if (!response.ok) {
           throw new Error(
             data.error ||
             data.message ||
-            "Unable to create your account."
+            "Unable to create your JOVA account."
           );
         }
 
         message.className = "message success";
+
         message.textContent =
-          "Your JOVA account has been created successfully. Redirecting...";
+          "Your JOVA account has been created successfully.";
+
+        submitBtn.textContent = "Account Created";
 
         setTimeout(() => {
           window.location.href = "/";
         }, 1200);
 
       } catch (error) {
+
+        console.error("JOVA registration error:", error);
+
         message.className = "message error";
+
         message.textContent =
-          error.message ||
-          "Something went wrong. Please try again.";
+          error && error.message
+            ? error.message
+            : "Something went wrong. Please try again.";
 
         submitBtn.disabled = false;
         submitBtn.textContent = "Create JOVA Account";
