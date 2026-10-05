@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "property-market-place-new",
+  "name": "property-marketplace-api",
   "main": "worker.js",
   "compatibility_date": "2026-10-03",
 
