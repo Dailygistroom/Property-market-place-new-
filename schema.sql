@@ -6,8 +6,6 @@ PRAGMA foreign_keys = ON;
 
 -- =========================================
 -- USERS
--- Only agents, landlords and developers
--- create marketplace accounts.
 -- =========================================
 
 CREATE TABLE IF NOT EXISTS users (
@@ -16,36 +14,54 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     phone TEXT NOT NULL,
     password_hash TEXT NOT NULL,
-
-    role TEXT NOT NULL
-        CHECK (role IN ('agent', 'landlord', 'developer')),
-
+    role TEXT NOT NULL CHECK (
+        role IN ('agent', 'landlord', 'developer')
+    ),
     profile_image TEXT,
     company_name TEXT,
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS idx_users_email
+ON users(email);
+
+-- =========================================
+-- AUTH SESSIONS
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_token
+ON auth_sessions(token);
+
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_user
+ON auth_sessions(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_expiry
+ON auth_sessions(expires_at);
+
 -- =========================================
 -- LISTING PLANS
--- Pricing can be changed later without
--- rebuilding the application.
 -- =========================================
 
 CREATE TABLE IF NOT EXISTS listing_plans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-
     name TEXT NOT NULL UNIQUE,
     description TEXT,
-
     price REAL NOT NULL,
     duration_days INTEGER NOT NULL,
-
     max_active_listings INTEGER,
-
     is_active INTEGER NOT NULL DEFAULT 1,
-
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -61,15 +77,9 @@ CREATE TABLE IF NOT EXISTS properties (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
 
-    listing_type TEXT NOT NULL
-        CHECK (
-            listing_type IN (
-                'sale',
-                'rent',
-                'land',
-                'shortlet'
-            )
-        ),
+    listing_type TEXT NOT NULL CHECK (
+        listing_type IN ('sale', 'rent', 'land', 'shortlet')
+    ),
 
     property_type TEXT NOT NULL,
 
@@ -79,6 +89,7 @@ CREATE TABLE IF NOT EXISTS properties (
     address TEXT NOT NULL,
     city TEXT NOT NULL,
     state TEXT,
+
     country TEXT NOT NULL DEFAULT 'Nigeria',
 
     latitude REAL,
@@ -95,26 +106,24 @@ CREATE TABLE IF NOT EXISTS properties (
     furnished INTEGER NOT NULL DEFAULT 0,
     serviced INTEGER NOT NULL DEFAULT 0,
 
-    status TEXT NOT NULL DEFAULT 'draft'
-        CHECK (
-            status IN (
-                'draft',
-                'active',
-                'sold',
-                'rented',
-                'inactive'
-            )
-        ),
+    status TEXT NOT NULL DEFAULT 'draft' CHECK (
+        status IN (
+            'draft',
+            'active',
+            'sold',
+            'rented',
+            'inactive'
+        )
+    ),
 
-    plan_type TEXT NOT NULL DEFAULT 'free'
-        CHECK (
-            plan_type IN (
-                'free',
-                'standard',
-                'featured',
-                'premium'
-            )
-        ),
+    plan_type TEXT NOT NULL DEFAULT 'free' CHECK (
+        plan_type IN (
+            'free',
+            'standard',
+            'featured',
+            'premium'
+        )
+    ),
 
     listing_expires_at TEXT,
 
@@ -130,9 +139,29 @@ CREATE TABLE IF NOT EXISTS properties (
         ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_properties_user
+ON properties(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_properties_status
+ON properties(status);
+
+CREATE INDEX IF NOT EXISTS idx_properties_listing_type
+ON properties(listing_type);
+
+CREATE INDEX IF NOT EXISTS idx_properties_property_type
+ON properties(property_type);
+
+CREATE INDEX IF NOT EXISTS idx_properties_city
+ON properties(city);
+
+CREATE INDEX IF NOT EXISTS idx_properties_state
+ON properties(state);
+
+CREATE INDEX IF NOT EXISTS idx_properties_price
+ON properties(price);
+
 -- =========================================
 -- PROPERTY IMAGES
--- Maximum 6 images per property.
 -- =========================================
 
 CREATE TABLE IF NOT EXISTS property_images (
@@ -152,7 +181,15 @@ CREATE TABLE IF NOT EXISTS property_images (
         ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_property_images_property
+ON property_images(property_id);
+
+-- =========================================
+-- MAXIMUM 6 IMAGES PER PROPERTY
+-- =========================================
+
 CREATE TRIGGER IF NOT EXISTS max_six_property_images
+
 BEFORE INSERT ON property_images
 
 WHEN (
@@ -162,10 +199,12 @@ WHEN (
 ) >= 6
 
 BEGIN
+
     SELECT RAISE(
         ABORT,
         'A property can have a maximum of 6 images'
     );
+
 END;
 
 -- =========================================
@@ -176,7 +215,6 @@ CREATE TABLE IF NOT EXISTS promotion_plans (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     name TEXT NOT NULL UNIQUE,
-
     description TEXT,
 
     price REAL NOT NULL,
@@ -196,21 +234,10 @@ CREATE TABLE IF NOT EXISTS property_promotions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
 
     property_id INTEGER NOT NULL,
-
     promotion_plan_id INTEGER NOT NULL,
 
-    starts_at TEXT NOT NULL,
+    starts_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_at TEXT NOT NULL,
-
-    status TEXT NOT NULL DEFAULT 'active'
-        CHECK (
-            status IN (
-                'pending',
-                'active',
-                'expired',
-                'cancelled'
-            )
-        ),
 
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -222,6 +249,12 @@ CREATE TABLE IF NOT EXISTS property_promotions (
         REFERENCES promotion_plans(id)
         ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_property_promotions_property
+ON property_promotions(property_id);
+
+CREATE INDEX IF NOT EXISTS idx_property_promotions_expiry
+ON property_promotions(expires_at);
 
 -- =========================================
 -- FAVOURITES
@@ -246,9 +279,14 @@ CREATE TABLE IF NOT EXISTS favourites (
         ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS idx_favourites_user
+ON favourites(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_favourites_property
+ON favourites(property_id);
+
 -- =========================================
 -- ENQUIRIES
--- Visitors do NOT need accounts.
 -- =========================================
 
 CREATE TABLE IF NOT EXISTS enquiries (
@@ -256,28 +294,39 @@ CREATE TABLE IF NOT EXISTS enquiries (
 
     property_id INTEGER NOT NULL,
 
+    user_id INTEGER,
+
     name TEXT NOT NULL,
-    email TEXT,
-    phone TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
 
     message TEXT NOT NULL,
 
-    status TEXT NOT NULL DEFAULT 'new'
-        CHECK (
-            status IN (
-                'new',
-                'read',
-                'replied',
-                'closed'
-            )
-        ),
+    status TEXT NOT NULL DEFAULT 'new' CHECK (
+        status IN (
+            'new',
+            'read',
+            'replied',
+            'closed'
+        )
+    ),
 
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (property_id)
         REFERENCES properties(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_enquiries_property
+ON enquiries(property_id);
+
+CREATE INDEX IF NOT EXISTS idx_enquiries_user
+ON enquiries(user_id);
 
 -- =========================================
 -- PAYMENTS
@@ -300,22 +349,20 @@ CREATE TABLE IF NOT EXISTS payments (
 
     currency TEXT NOT NULL DEFAULT 'NGN',
 
-    payment_type TEXT NOT NULL
-        CHECK (
-            payment_type IN (
-                'listing',
-                'promotion'
-            )
-        ),
+    payment_type TEXT NOT NULL CHECK (
+        payment_type IN (
+            'listing',
+            'promotion'
+        )
+    ),
 
-    status TEXT NOT NULL DEFAULT 'pending'
-        CHECK (
-            status IN (
-                'pending',
-                'successful',
-                'failed'
-            )
-        ),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (
+        status IN (
+            'pending',
+            'successful',
+            'failed'
+        )
+    ),
 
     paid_at TEXT,
 
@@ -338,69 +385,61 @@ CREATE TABLE IF NOT EXISTS payments (
         ON DELETE SET NULL
 );
 
--- =========================================
--- SEARCH INDEXES
--- =========================================
-
-CREATE INDEX IF NOT EXISTS idx_properties_listing_type
-ON properties(listing_type);
-
-CREATE INDEX IF NOT EXISTS idx_properties_property_type
-ON properties(property_type);
-
-CREATE INDEX IF NOT EXISTS idx_properties_city
-ON properties(city);
-
-CREATE INDEX IF NOT EXISTS idx_properties_state
-ON properties(state);
-
-CREATE INDEX IF NOT EXISTS idx_properties_price
-ON properties(price);
-
-CREATE INDEX IF NOT EXISTS idx_properties_status
-ON properties(status);
-
-CREATE INDEX IF NOT EXISTS idx_properties_user
-ON properties(user_id);
-
-CREATE INDEX IF NOT EXISTS idx_property_images_property
-ON property_images(property_id);
-
-CREATE INDEX IF NOT EXISTS idx_promotions_property
-ON property_promotions(property_id);
-
-CREATE INDEX IF NOT EXISTS idx_enquiries_property
-ON enquiries(property_id);
-
 CREATE INDEX IF NOT EXISTS idx_payments_user
 ON payments(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_payments_property
+ON payments(property_id);
+
+CREATE INDEX IF NOT EXISTS idx_payments_reference
+ON payments(reference);
+
+CREATE INDEX IF NOT EXISTS idx_payments_status
+ON payments(status);
 
 -- =========================================
 -- DEFAULT LISTING PLANS
 -- =========================================
 
 INSERT OR IGNORE INTO listing_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days,
+    max_active_listings
+)
 VALUES
 (
     'free',
     'First three active listings',
     0,
-    30
+    30,
+    3
 );
 
 INSERT OR IGNORE INTO listing_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'standard',
-    'Standard paid property listing',
+    'Standard property listing',
     15000,
     30
 );
 
 INSERT OR IGNORE INTO listing_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'featured',
@@ -410,7 +449,12 @@ VALUES
 );
 
 INSERT OR IGNORE INTO listing_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'premium',
@@ -424,7 +468,12 @@ VALUES
 -- =========================================
 
 INSERT OR IGNORE INTO promotion_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'boost',
@@ -434,21 +483,31 @@ VALUES
 );
 
 INSERT OR IGNORE INTO promotion_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'featured_promotion',
-    'Featured promotional placement',
+    'Featured property promotion',
     20000,
     14
 );
 
 INSERT OR IGNORE INTO promotion_plans
-(name, description, price, duration_days)
+(
+    name,
+    description,
+    price,
+    duration_days
+)
 VALUES
 (
     'premium_promotion',
-    'Premium promotional placement',
+    'Premium property promotion',
     40000,
     30
 );
