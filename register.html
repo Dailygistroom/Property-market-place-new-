@@ -20,63 +20,64 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 16px;
     }
 
     .container {
       width: 100%;
-      max-width: 460px;
+      max-width: 440px;
     }
 
     .brand {
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 14px;
     }
 
     .brand h1 {
       margin: 0;
-      font-size: 42px;
+      font-size: 36px;
       letter-spacing: 3px;
       color: #d6b36a;
     }
 
     .brand p {
-      margin: 8px 0 0;
+      margin: 5px 0 0;
       color: #aeb8c6;
-      font-size: 15px;
+      font-size: 14px;
     }
 
     .card {
       background: #0d1d32;
       border: 1px solid rgba(214, 179, 106, 0.25);
-      border-radius: 20px;
-      padding: 28px 22px;
+      border-radius: 18px;
+      padding: 22px 20px;
       box-shadow: 0 18px 50px rgba(0,0,0,0.3);
     }
 
     h2 {
-      margin: 0 0 8px;
-      font-size: 25px;
+      margin: 0 0 5px;
+      font-size: 23px;
     }
 
     .subtitle {
       color: #aeb8c6;
-      margin: 0 0 24px;
-      line-height: 1.5;
+      margin: 0 0 17px;
+      line-height: 1.4;
+      font-size: 14px;
     }
 
     label {
       display: block;
-      margin: 16px 0 7px;
-      font-size: 14px;
+      margin: 11px 0 5px;
+      font-size: 13px;
       font-weight: 600;
     }
 
     input,
     select {
       width: 100%;
-      padding: 14px;
-      border-radius: 10px;
+      padding: 12px 13px;
+      border-radius: 9px;
       border: 1px solid #314258;
       background: #08172a;
       color: #fff;
@@ -89,10 +90,59 @@
       border-color: #d6b36a;
     }
 
-    button {
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input {
+      padding-right: 48px;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 45px;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #aeb8c6;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .toggle-password:hover {
+      background: transparent;
+    }
+
+    .referral-toggle {
+      display: block;
+      margin-top: 12px;
+      color: #d6b36a;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .referral-box {
+      display: none;
+      margin-top: 7px;
+    }
+
+    .referral-box.show {
+      display: block;
+    }
+
+    .referral-box input {
+      text-transform: uppercase;
+    }
+
+    button[type="submit"] {
       width: 100%;
-      margin-top: 24px;
-      padding: 15px;
+      margin-top: 18px;
+      padding: 13px;
       border: 0;
       border-radius: 10px;
       background: #d6b36a;
@@ -102,18 +152,18 @@
       cursor: pointer;
     }
 
-    button:disabled {
+    button[type="submit"]:disabled {
       opacity: 0.6;
       cursor: wait;
     }
 
     .message {
       display: none;
-      margin-top: 16px;
-      padding: 12px;
+      margin-top: 13px;
+      padding: 11px;
       border-radius: 9px;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.45;
     }
 
     .message.error {
@@ -132,9 +182,9 @@
 
     .login {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 15px;
       color: #aeb8c6;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .login a {
@@ -146,10 +196,10 @@
     .back {
       display: block;
       text-align: center;
-      margin-top: 18px;
+      margin-top: 13px;
       color: #aeb8c6;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px;
     }
   </style>
 </head>
@@ -168,10 +218,10 @@
       <h2>Create your account</h2>
 
       <p class="subtitle">
-        Create an account to list and manage properties on JOVA.
+        Join JOVA to list and manage your properties.
       </p>
 
-      <form id="registerForm">
+      <form id="registerForm" novalidate>
 
         <label for="name">Full Name</label>
         <input
@@ -179,6 +229,7 @@
           name="name"
           type="text"
           placeholder="Enter your full name"
+          autocomplete="name"
           required
         >
 
@@ -188,6 +239,7 @@
           name="email"
           type="email"
           placeholder="you@example.com"
+          autocomplete="email"
           required
         >
 
@@ -196,7 +248,9 @@
           id="phone"
           name="phone"
           type="tel"
-          placeholder=""
+          inputmode="tel"
+          placeholder="09027384749"
+          autocomplete="tel"
           required
         >
 
@@ -209,34 +263,61 @@
         </select>
 
         <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Create a password"
-          minlength="8"
-          required
-        >
+        <div class="password-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="At least 8 characters"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+          <button
+            type="button"
+            class="toggle-password"
+            data-target="password"
+            aria-label="Show password"
+          >👁️</button>
+        </div>
 
         <label for="confirmPassword">Confirm Password</label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          placeholder="Repeat your password"
-          minlength="8"
-          required
-        >
+        <div class="password-wrap">
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="Repeat your password"
+            minlength="8"
+            autocomplete="new-password"
+            required
+          >
+          <button
+            type="button"
+            class="toggle-password"
+            data-target="confirmPassword"
+            aria-label="Show password"
+          >👁️</button>
+        </div>
 
-        <label for="referral">Referral Code <span style="color:#7f8b9b;">(optional)</span></label>
-        <input
-          id="referral"
-          name="referral"
-          type="text"
-          maxlength="8"
-          placeholder="e.g. PM7K2A9X"
-          style="text-transform:uppercase;"
+        <div
+          class="referral-toggle"
+          id="referralToggle"
+          role="button"
+          tabindex="0"
         >
+          + Have a referral code?
+        </div>
+
+        <div class="referral-box" id="referralBox">
+          <input
+            id="referral"
+            name="referral"
+            type="text"
+            maxlength="8"
+            placeholder="Enter referral code"
+          >
+        </div>
 
         <button type="submit" id="submitBtn">
           Create JOVA Account
@@ -265,6 +346,60 @@
     const message = document.getElementById("message");
     const submitBtn = document.getElementById("submitBtn");
 
+    /* Password visibility */
+    document.querySelectorAll(".toggle-password").forEach(button => {
+      button.addEventListener("click", function () {
+        const target = document.getElementById(this.dataset.target);
+
+        if (target.type === "password") {
+          target.type = "text";
+          this.textContent = "🙈";
+          this.setAttribute("aria-label", "Hide password");
+        } else {
+          target.type = "password";
+          this.textContent = "👁️";
+          this.setAttribute("aria-label", "Show password");
+        }
+      });
+    });
+
+    /* Referral field */
+    const referralToggle = document.getElementById("referralToggle");
+    const referralBox = document.getElementById("referralBox");
+
+    referralToggle.addEventListener("click", () => {
+      referralBox.classList.toggle("show");
+
+      referralToggle.textContent =
+        referralBox.classList.contains("show")
+          ? "− Hide referral code"
+          : "+ Have a referral code?";
+    });
+
+    referralToggle.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        referralToggle.click();
+      }
+    });
+
+    function showError(text) {
+      message.className = "message error";
+      message.textContent = text;
+    }
+
+    function normalizePhone(value) {
+      let phone = value.trim().replace(/[\s\-()]/g, "");
+
+      if (phone.startsWith("+234")) {
+        phone = "0" + phone.slice(4);
+      } else if (phone.startsWith("234")) {
+        phone = "0" + phone.slice(3);
+      }
+
+      return phone;
+    }
+
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
@@ -273,7 +408,9 @@
 
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
+      const phone = normalizePhone(
+        document.getElementById("phone").value
+      );
       const role = document.getElementById("role").value;
       const password = document.getElementById("password").value;
       const confirmPassword =
@@ -282,9 +419,36 @@
       const referral =
         document.getElementById("referral").value.trim().toUpperCase();
 
+      /* Basic validation */
+      if (!name) {
+        showError("Please enter your full name.");
+        return;
+      }
+
+      if (!email || !email.includes("@")) {
+        showError("Please enter a valid email address.");
+        return;
+      }
+
+      if (!/^0\d{10}$/.test(phone)) {
+        showError(
+          "Please enter a valid Nigerian phone number, e.g. 09027384749."
+        );
+        return;
+      }
+
+      if (!role) {
+        showError("Please select your account type.");
+        return;
+      }
+
+      if (password.length < 8) {
+        showError("Your password must be at least 8 characters.");
+        return;
+      }
+
       if (password !== confirmPassword) {
-        message.className = "message error";
-        message.textContent = "Your passwords do not match.";
+        showError("Your passwords do not match.");
         return;
       }
 
@@ -332,7 +496,8 @@
       } catch (error) {
         message.className = "message error";
         message.textContent =
-          error.message || "Something went wrong. Please try again.";
+          error.message ||
+          "Something went wrong. Please try again.";
 
         submitBtn.disabled = false;
         submitBtn.textContent = "Create JOVA Account";
