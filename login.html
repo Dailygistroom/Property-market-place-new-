@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | JOVA</title>
+  <title>Login | JOVA Property Marketplace</title>
 
   <style>
     * {
@@ -19,13 +19,22 @@
 
     .header {
       background: #0b1735;
-      padding: 22px 24px;
+      padding: 28px 18px;
       text-align: center;
     }
 
+    .brand {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
     .logo {
-      font-size: 30px;
+      font-size: 42px;
       font-weight: 800;
+      letter-spacing: -1px;
       color: white;
     }
 
@@ -33,8 +42,16 @@
       color: #d9b66f;
     }
 
+    .marketplace {
+      color: white;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
     .container {
-      min-height: calc(100vh - 82px);
+      min-height: calc(100vh - 100px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -103,7 +120,7 @@
       border: 0;
       background: transparent;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 20px;
     }
 
     .login-btn {
@@ -148,6 +165,7 @@
       text-align: center;
       margin-top: 24px;
       color: #6b7280;
+      line-height: 1.5;
     }
 
     .register a {
@@ -155,35 +173,58 @@
       font-weight: 700;
       text-decoration: none;
     }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 24px 12px;
+      }
+
+      .logo {
+        font-size: 34px;
+      }
+
+      .marketplace {
+        font-size: 17px;
+      }
+
+      .brand {
+        gap: 8px;
+      }
+    }
   </style>
 </head>
 
 <body>
 
   <header class="header">
-    <div class="logo">JO<span>VA</span></div>
+    <div class="brand">
+      <div class="logo">JO<span>VA</span></div>
+      <div class="marketplace">Property Marketplace</div>
+    </div>
   </header>
 
   <main class="container">
     <div class="card">
 
       <h1>Welcome back</h1>
+
       <p class="subtitle">
         Sign in to manage your JOVA property listings and account.
       </p>
 
       <div id="message" class="message"></div>
 
-      <form id="loginForm">
+      <form id="loginForm" novalidate>
 
         <div class="field">
           <label for="email">Email Address</label>
+
           <input
             id="email"
-            type="email"
-            placeholder="Enter your email"
+            type="text"
+            inputmode="email"
             autocomplete="email"
-            required
+            placeholder="Enter your email"
           >
         </div>
 
@@ -191,12 +232,12 @@
           <label for="password">Password</label>
 
           <div class="password-wrap">
+
             <input
               id="password"
               type="password"
-              placeholder="Enter your password"
               autocomplete="current-password"
-              required
+              placeholder="Enter your password"
             >
 
             <button
@@ -205,10 +246,15 @@
               id="togglePassword"
               aria-label="Show password"
             >👁️</button>
+
           </div>
         </div>
 
-        <button type="submit" class="login-btn" id="loginBtn">
+        <button
+          type="submit"
+          class="login-btn"
+          id="loginBtn"
+        >
           Login to JOVA
         </button>
 
@@ -230,11 +276,14 @@
     const message = document.getElementById("message");
     const togglePassword = document.getElementById("togglePassword");
 
-    togglePassword.addEventListener("click", () => {
-      const showing = password.type === "text";
-
-      password.type = showing ? "password" : "text";
-      togglePassword.textContent = showing ? "👁️" : "🙈";
+    togglePassword.addEventListener("click", function () {
+      if (password.type === "password") {
+        password.type = "text";
+        togglePassword.textContent = "🙈";
+      } else {
+        password.type = "password";
+        togglePassword.textContent = "👁️";
+      }
     });
 
     function showMessage(text, type) {
@@ -242,56 +291,90 @@
       message.className = "message " + type;
     }
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
 
       const emailValue = email.value.trim();
       const passwordValue = password.value;
 
+      message.className = "message";
+      message.textContent = "";
+
       if (!emailValue || !passwordValue) {
-        showMessage("Please enter your email and password.", "error");
+        showMessage(
+          "Please enter your email and password.",
+          "error"
+        );
         return;
       }
 
       loginBtn.disabled = true;
       loginBtn.textContent = "Logging in...";
-      message.className = "message";
-      message.textContent = "";
 
       try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            email: emailValue,
-            password: passwordValue
-          })
-        });
+        const response = await fetch(
+          "/api/auth/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              email: emailValue,
+              password: passwordValue
+            })
+          }
+        );
 
-        const data = await response.json();
+        const responseText = await response.text();
+
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            "The JOVA server returned an unexpected response. Please try again."
+          );
+        }
 
         if (!response.ok || !data.success) {
-          throw new Error(data.error || "Login failed.");
+          throw new Error(
+            data.error || "Incorrect email or password."
+          );
         }
 
         if (data.token) {
-          localStorage.setItem("jova_token", data.token);
+          localStorage.setItem(
+            "jova_token",
+            data.token
+          );
         }
 
         if (data.user) {
-          localStorage.setItem("jova_user", JSON.stringify(data.user));
+          localStorage.setItem(
+            "jova_user",
+            JSON.stringify(data.user)
+          );
         }
 
-        showMessage("Login successful. Welcome to JOVA!", "success");
+        showMessage(
+          "Login successful. Welcome to JOVA!",
+          "success"
+        );
 
-        setTimeout(() => {
+        setTimeout(function () {
           window.location.href = "/";
         }, 700);
 
       } catch (error) {
-        showMessage(error.message || "Unable to login. Please try again.", "error");
+
+        showMessage(
+          error.message ||
+          "Unable to login. Please try again.",
+          "error"
+        );
 
         loginBtn.disabled = false;
         loginBtn.textContent = "Login to JOVA";
