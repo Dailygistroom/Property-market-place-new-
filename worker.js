@@ -1091,25 +1091,30 @@ async function handleCreateProperty(request, env) {
 
   const price = Number(body.price);
 
-  const address = String(
-    body.address ||
-    body.location ||
-    ""
-  ).trim();
+  const area = String(
+  body.area || ""
+).trim();
 
-  const city = String(
-    body.city ||
-    body.location ||
-    ""
-  ).trim();
+const estate = String(
+  body.estate || ""
+).trim();
 
-  const state = body.state
-    ? String(body.state).trim()
-    : null;
+const address = String(
+  body.address || ""
+).trim();
 
-  const country = String(
-    body.country || "Nigeria"
-  ).trim();
+const city = String(
+  body.city || ""
+).trim();
+
+const state = body.state
+  ? String(body.state).trim()
+  : null;
+
+const country = String(
+  body.country || "Nigeria"
+).trim();
+
 
   const bedrooms = Number(body.bedrooms || 0);
   const bathrooms = Number(body.bathrooms || 0);
