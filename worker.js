@@ -1206,10 +1206,18 @@ async function handleCreateProperty(request, env) {
       currency,
       address,
       city,
-      state,
-      country,
-      latitude,
-      longitude,
+     state,
+     country,
+      area,
+     estate,
+     latitude,
+     longitude,
+      
+      
+      
+      
+      
+      
       bedrooms,
       bathrooms,
       toilets,
@@ -1237,8 +1245,12 @@ async function handleCreateProperty(request, env) {
       city,
       state,
       country,
-      body.latitude ?? null,
-      body.longitude ?? null,
+      area,
+      estate,
+body.latitude ?? null,
+body.longitude ?? null,
+      
+      
       bedrooms,
       bathrooms,
       toilets,
