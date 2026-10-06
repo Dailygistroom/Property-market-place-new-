@@ -1136,8 +1136,8 @@ async function handleCreateProperty(request, env) {
     "shortlet",
   ];
 
-  if (!title || !description || !propertyType || !address || !city) {
-    return json(
+   if (!title || !description || !propertyType || !city){
+  return json(
       {
         success: false,
         message: "Please complete all required property fields.",
