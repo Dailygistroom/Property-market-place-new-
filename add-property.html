@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Property | JOVA</title>
+
+<style>
+:root{
+  --navy:#071525;
+  --navy2:#0d2036;
+  --gold:#d6b36a;
+  --cream:#f8f5ee;
+  --white:#fff;
+  --muted:#718096;
+  --border:#dfe5eb;
+  --danger:#c0392b;
+  --success:#16805c;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--cream);
+  color:var(--navy);
+}
+
+header{
+  background:var(--navy);
+  color:white;
+  padding:18px 20px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.header-inner{
+  max-width:900px;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+
+.back{
+  color:white;
+  text-decoration:none;
+  font-size:14px;
+}
+
+main{
+  max-width:900px;
+  margin:0 auto;
+  padding:25px 16px 60px;
+}
+
+h1{
+  margin:5px 0 7px;
+  font-size:30px;
+}
+
+.subtitle{
+  color:var(--muted);
+  margin:0 0 25px;
+}
+
+.card{
+  background:white;
+  border-radius:16px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 4px 18px rgba(7,21,37,.06);
+}
+
+.card h2{
+  margin:0 0 18px;
+  font-size:19px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.field{
+  margin-bottom:15px;
+}
+
+.field.full{
+  grid-column:1/-1;
+}
+
+label{
+  display:block;
+  font-weight:600;
+  font-size:14px;
+  margin-bottom:7px;
+}
+
+input,select,textarea{
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:13px;
+  font:inherit;
+  background:white;
+  color:var(--navy);
+}
+
+textarea{
+  min-height:150px;
+  resize:vertical;
+}
+
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(214,179,106,.15);
+}
+
+small{
+  color:var(--muted);
+}
+
+.photos{
+  border:2px dashed #d5dbe2;
+  border-radius:14px;
+  padding:18px;
+  text-align:center;
+}
+
+.photos input{
+  border:0;
+  padding:10px 0;
+}
+
+.preview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.photo{
+  position:relative;
+  aspect-ratio:1;
+  border-radius:10px;
+  overflow:hidden;
+  background:#eee;
+}
+
+.photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.cover{
+  position:absolute;
+  bottom:6px;
+  left:6px;
+  background:var(--gold);
+  color:var(--navy);
+  padding:4px 7px;
+  border-radius:5px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+  margin-top:20px;
+}
+
+button{
+  border:0;
+  border-radius:11px;
+  padding:15px 22px;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.publish{
+  flex:1;
+  background:var(--gold);
+  color:var(--navy);
+}
+
+.cancel{
+  background:#e8edf2;
+  color:var(--navy);
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.message{
+  display:none;
+  padding:13px;
+  border-radius:10px;
+  margin-bottom:18px;
+  font-weight:600;
+}
+
+.message.error{
+  display:block;
+  background:#fdecea;
+  color:var(--danger);
+}
+
+.message.success{
+  display:block;
+  background:#e8f7f0;
+  color:var(--success);
+}
+
+@media(max-width:650px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .field.full{
+    grid-column:auto;
+  }
+
+  .card{
+    padding:18px;
+  }
+
+  h1{
+    font-size:26px;
+  }
+
+  .preview{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .actions{
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">JOVA</div>
+    <a class="back" href="index.html">← Back to Marketplace</a>
+  </div>
+</header>
+
+<main>
+
+<h1>Add Your Property</h1>
+<p class="subtitle">
+  Create a professional property listing and reach potential buyers or tenants.
+</p>
+
+<div id="message" class="message"></div>
+
+<form id="propertyForm">
+
+<section class="card">
+<h2>1. Property Basics</h2>
+
+<div class="grid">
+
+<div class="field full">
+<label for="title">Property Title *</label>
+<input id="title" required placeholder="e.g. Luxury 4 Bedroom Detached Duplex">
+</div>
+
+<div class="field">
+<label for="listing_type">Listing Purpose *</label>
+<select id="listing_type" required>
+<option value="">Select purpose</option>
+<option value="sale">For Sale</option>
+<option value="rent">For Rent</option>
+<option value="land">Land</option>
+<option value="shortlet">Shortlet</option>
+</select>
+</div>
+
+<div class="field">
+<label for="property_type">Property Type *</label>
+<select id="property_type" required>
+<option value="">Select property type</option>
+<option value="Apartment">Apartment</option>
+<option value="Detached Duplex">Detached Duplex</option>
+<option value="Semi-Detached Duplex">Semi-Detached Duplex</option>
+<option value="Terraced House">Terraced House</option>
+<option value="Bungalow">Bungalow</option>
+<option value="Penthouse">Penthouse</option>
+<option value="Mansion">Mansion</option>
+<option value="Land">Land</option>
+<option value="Office">Office</option>
+<option value="Shop">Shop</option>
+<option value="Warehouse">Warehouse</option>
+<option value="Hotel">Hotel</option>
+<option value="Other">Other</option>
+</select>
+</div>
+
+<div class="field">
+<label for="price">Price (₦) *</label>
+<input id="price" type="number" min="0" required placeholder="e.g. 85000000">
+</div>
+
+</div>
+</section>
+
+
+<section class="card">
+<h2>2. Property Features</h2>
+
+<div class="grid">
+
+<div class="field">
+<label for="bedrooms">Bedrooms</label>
+<input id="bedrooms" type="number" min="0" value="0">
+</div>
+
+<div class="field">
+<label for="bathrooms">Bathrooms</label>
+<input id="bathrooms" type="number" min="0" value="0">
+</div>
+
+<div class="field">
+<label for="toilets">Toilets</label>
+<input id="toilets" type="number" min="0" value="0">
+</div>
+
+<div class="field">
+<label for="parking_spaces">Parking Spaces</label>
+<input id="parking_spaces" type="number" min="0" value="0">
+</div>
+
+<div class="field">
+<label for="size_value">Property Size</label>
+<input id="size_value" type="number" min="0" placeholder="e.g. 450">
+</div>
+
+<div class="field">
+<label for="size_unit">Size Unit</label>
+<select id="size_unit">
+<option value="sqm">Square metres (sqm)</option>
+<option value="sqft">Square feet (sqft)</option>
+<option value="acres">Acres</option>
+<option value="plots">Plots</option>
+</select>
+</div>
+
+<div class="field">
+<label for="furnished">Furnished</label>
+<select id="furnished">
+<option value="0">No</option>
+<option value="1">Yes</option>
+</select>
+</div>
+
+<div class="field">
+<label for="serviced">Serviced Property</label>
+<select id="serviced">
+<option value="0">No</option>
+<option value="1">Yes</option>
+</select>
+</div>
+
+</div>
+</section>
+
+
+<section class="card">
+<h2>3. Property Location</h2>
+
+<div class="grid">
+
+<div class="field">
+<label for="country">Country</label>
+<input id="country" value="Nigeria">
+</div>
+
+<div class="field">
+<label for="state">State *</label>
+<select id="state" required>
+<option value="">Select state</option>
+<option>Lagos</option>
+<option>Abuja (FCT)</option>
+<option>Rivers</option>
+<option>Oyo</option>
+<option>Ogun</option>
+<option>Delta</option>
+<option>Edo</option>
+<option>Enugu</option>
+<option>Anambra</option>
+<option>Kano</option>
+<option>Kaduna</option>
+<option>Cross River</option>
+<option>Akwa Ibom</option>
+<option>Imo</option>
+<option>Abia</option>
+<option>Plateau</option>
+<option>Ondo</option>
+<option>Osun</option>
+<option>Kwara</option>
+<option>Ekiti</option>
+<option>Kogi</option>
+<option>Niger</option>
+<option>Benue</option>
+<option>Bayelsa</option>
+<option>Ebonyi</option>
+<option>Gombe</option>
+<option>Jigawa</option>
+<option>Yobe</option>
+<option>Borno</option>
+<option>Kebbi</option>
+<option>Sokoto</option>
+<option>Zamfara</option>
+<option>Nasarawa</option>
+<option>Taraba</option>
+<option>Adamawa</option>
+</select>
+</div>
+
+<div class="field">
+<label for="area">Area / Locality</label>
+<input id="area" placeholder="e.g. Lekki Phase 1">
+</div>
+
+<div class="field">
+<label for="estate">Estate / Development</label>
+<input id="estate" placeholder="e.g. Banana Island Estate">
+</div>
+
+<div class="field">
+<label for="city">City *</label>
+<input id="city" required placeholder="e.g. Lagos">
+</div>
+
+<div class="field full">
+<label for="address">Full Address</label>
+<input id="address" placeholder="Street address, house number, etc.">
+<small>Full address is optional. You can add more precise map location later.</small>
+</div>
+
+</div>
+</section>
+
+
+<section class="card">
+<h2>4. Description</h2>
+
+<div class="field">
+<label for="description">Tell buyers or tenants about the property *</label>
+<textarea id="description" required placeholder="Describe the property, amenities, surroundings, title documents, facilities and other important details..."></textarea>
+</div>
+</section>
+
+
+<section class="card">
+<h2>5. Property Photos</h2>
+
+<div class="photos">
+<strong>Upload up to 6 high-quality photos</strong>
+<p><small>Your first photo will be used as the cover photo.</small></p>
+
+<input
+  id="images"
+  type="file"
+  accept="image/jpeg,image/png,image/webp"
+  multiple
+>
+
+<div id="preview" class="preview"></div>
+</div>
+</section>
+
+
+<section class="card">
+<h2>6. Review & Publish</h2>
+
+<p>
+Please check your information carefully before publishing.
+Your listing will be created as an active property.
+</p>
+
+<div class="actions">
+<button type="button" class="cancel" onclick="history.back()">Cancel</button>
+<button type="submit" class="publish" id="publishBtn">
+Publish Property
+</button>
+</div>
+
+</section>
+
+</form>
+
+</main>
+
+
+<script>
+const API = "https://property-marketplace-api.dailygistroom.workers.dev";
+
+const form = document.getElementById("propertyForm");
+const imagesInput = document.getElementById("images");
+const preview = document.getElementById("preview");
+const message = document.getElementById("message");
+const publishBtn = document.getElementById("publishBtn");
+
+let selectedImages = [];
+
+function getToken(){
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("auth_token") ||
+    localStorage.getItem("session_token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("jova_token") ||
+    ""
+  );
+}
+
+function value(id){
+  return document.getElementById(id).value.trim();
+}
+
+function showMessage(text, type){
+  message.textContent = text;
+  message.className = "message " + type;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+imagesInput.addEventListener("change", function(){
+  const files = Array.from(this.files);
+
+  if(selectedImages.length + files.length > 6){
+    showMessage("You can upload a maximum of 6 photos.", "error");
+    this.value = "";
+    return;
+  }
+
+  selectedImages = selectedImages.concat(files);
+  renderPreviews();
+  this.value = "";
+});
+
+function renderPreviews(){
+  preview.innerHTML = "";
+
+  selectedImages.forEach((file,index)=>{
+    const box = document.createElement("div");
+    box.className = "photo";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+
+    box.appendChild(img);
+
+    if(index === 0){
+      const cover = document.createElement("div");
+      cover.className = "cover";
+      cover.textContent = "COVER PHOTO";
+      box.appendChild(cover);
+    }
+
+    preview.appendChild(box);
+  });
+}
+
+async function createProperty(token){
+
+  const payload = {
+    title: value("title"),
+    listing_type: value("listing_type"),
+    property_type: value("property_type"),
+    price: Number(value("price")),
+
+    currency: "NGN",
+
+    address: value("address") || null,
+    city: value("city"),
+    state: value("state") || null,
+    country: value("country") || "Nigeria",
+
+    area: value("area") || null,
+    estate: value("estate") || null,
+
+    latitude: null,
+    longitude: null,
+
+    bedrooms: Number(value("bedrooms") || 0),
+    bathrooms: Number(value("bathrooms") || 0),
+    toilets: Number(value("toilets") || 0),
+    parking_spaces: Number(value("parking_spaces") || 0),
+
+    size_value: value("size_value")
+      ? Number(value("size_value"))
+      : null,
+
+    size_unit: value("size_unit") || "sqm",
+
+    furnished: Number(value("furnished") || 0),
+    serviced: Number(value("serviced") || 0),
+
+    description: value("description")
+  };
+
+  const response = await fetch(API + "/api/properties", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(()=>({}));
+
+  if(!response.ok || data.success === false){
+    throw new Error(
+      data.message ||
+      data.error ||
+      "Unable to create property."
+    );
+  }
+
+  return (
+    data.property?.id ||
+    data.data?.property?.id ||
+    data.data?.id ||
+    data.id
+  );
+}
+
+async function uploadImages(propertyId, token){
+
+  if(!selectedImages.length) return;
+
+  const formData = new FormData();
+
+  selectedImages.forEach(file=>{
+    formData.append("images", file);
+  });
+
+  const response = await fetch(
+    API + "/api/property-images?property_id=" + encodeURIComponent(propertyId),
+    {
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer " + token
+      },
+      body:formData
+    }
+  );
+
+  const data = await response.json().catch(()=>({}));
+
+  if(!response.ok || data.success === false){
+    throw new Error(
+      data.message ||
+      data.error ||
+      "Property was created, but the photos could not be uploaded."
+    );
+  }
+}
+
+form.addEventListener("submit", async function(e){
+
+  e.preventDefault();
+
+  const token = getToken();
+
+  if(!token){
+    showMessage(
+      "Please log in before adding a property.",
+      "error"
+    );
+
+    setTimeout(()=>{
+      window.location.href = "login.html";
+    },1200);
+
+    return;
+  }
+
+  publishBtn.disabled = true;
+  publishBtn.textContent = "Publishing...";
+
+  try{
+
+    const propertyId = await createProperty(token);
+
+    if(!propertyId){
+      throw new Error(
+        "Property was created but no property ID was returned."
+      );
+    }
+
+    await uploadImages(propertyId, token);
+
+    showMessage(
+      "Property published successfully!",
+      "success"
+    );
+
+    setTimeout(()=>{
+      window.location.href =
+        "property-details.html?id=" +
+        encodeURIComponent(propertyId);
+    },1200);
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      error.message || "Something went wrong. Please try again.",
+      "error"
+    );
+
+    publishBtn.disabled = false;
+    publishBtn.textContent = "Publish Property";
+  }
+
+});
+</script>
+
+</body>
+</html>
