@@ -2929,7 +2929,7 @@ async function handleMarkNotificationRead(request, env) {
     message: "Notification marked as read."
   });
 }
-async function handleHealth(env) {
+
 async function handleHealth(env) {
   let database = false;
 
