@@ -2929,7 +2929,28 @@ async function handleMarkNotificationRead(request, env) {
     message: "Notification marked as read."
   });
 }
+async function handleGetNotifications(request, env) {
+  const auth = await requireUserResponse(request, env);
 
+  if (auth.error) {
+    return auth.error;
+  }
+
+  const result = await env.DB.prepare(`
+    SELECT id, user_id, type, title, message, link, is_read, created_at
+    FROM notifications
+    WHERE user_id = ?
+    ORDER BY created_at DESC, id DESC
+    LIMIT 100
+  `)
+    .bind(auth.user.id)
+    .all();
+
+  return json({
+    success: true,
+    notifications: result.results || [],
+  });
+}
 async function handleHealth(env) {
   let database = false;
 
@@ -3023,7 +3044,7 @@ if (
     path === "/api/conversations" &&
     method === "POST"
   ) {
-    return handleStartConversation(request, env);
+    return handleCreateConversation(request, env);
   }
 
   if (
