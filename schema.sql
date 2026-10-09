@@ -411,3 +411,85 @@ VALUES
     40000,
     30
 );
+-- =========================================
+-- JOVA MESSAGING SYSTEM
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    property_id INTEGER NOT NULL,
+    buyer_id INTEGER NOT NULL,
+    advertiser_id INTEGER NOT NULL,
+    last_message TEXT,
+    last_message_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE(property_id, buyer_id, advertiser_id),
+
+    FOREIGN KEY (property_id)
+        REFERENCES properties(id) ON DELETE CASCADE,
+    FOREIGN KEY (buyer_id)
+        REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (advertiser_id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_buyer
+ON conversations(buyer_id);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_advertiser
+ON conversations(advertiser_id);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_property
+ON conversations(property_id);
+
+
+-- =========================================
+-- JOVA MESSAGES
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id INTEGER NOT NULL,
+    sender_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (conversation_id)
+        REFERENCES conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY (sender_id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation
+ON messages(conversation_id, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_messages_unread
+ON messages(conversation_id, is_read);
+
+
+-- =========================================
+-- JOVA NOTIFICATIONS
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    link TEXT,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user
+ON notifications(user_id, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_unread
+ON notifications(user_id, is_read);
