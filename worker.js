@@ -192,7 +192,7 @@ async function signResetPayload(payload, secret) {
     "HMAC",
     key,
     new TextEncoder().encode(payload)
-  );h
+  );
 
   return toBase64Url(new Uint8Array(signature));
 }
