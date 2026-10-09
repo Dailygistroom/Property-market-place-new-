@@ -192,7 +192,7 @@ async function signResetPayload(payload, secret) {
     "HMAC",
     key,
     new TextEncoder().encode(payload)
-  );
+  );h
 
   return toBase64Url(new Uint8Array(signature));
 }
@@ -2496,7 +2496,440 @@ async function handlePaystackWebhook(
 
   return text("OK", 200);
 }
+// =========================================
+// JOVA MESSAGING — CREATE CONVERSATION
+// =========================================
 
+async function handleCreateConversation(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid JSON request."
+    }, 400);
+  }
+
+  const propertyId = Number(body.property_id);
+  const buyerId = Number(auth.user.id);
+
+  if (!propertyId) {
+    return json({
+      success: false,
+      message: "A valid property ID is required."
+    }, 400);
+  }
+
+  const property = await env.DB.prepare(`
+    SELECT id, user_id, title, status
+    FROM properties
+    WHERE id = ?
+      AND status = 'active'
+    LIMIT 1
+  `)
+    .bind(propertyId)
+    .first();
+
+  if (!property) {
+    return json({
+      success: false,
+      message: "Property not found or unavailable."
+    }, 404);
+  }
+
+  const advertiserId = Number(property.user_id);
+
+  if (buyerId === advertiserId) {
+    return json({
+      success: false,
+      message: "You cannot message yourself about your own property."
+    }, 400);
+  }
+
+  await env.DB.prepare(`
+    INSERT INTO conversations (
+      property_id,
+      buyer_id,
+      advertiser_id
+    )
+    VALUES (?, ?, ?)
+    ON CONFLICT(property_id, buyer_id, advertiser_id)
+    DO NOTHING
+  `)
+    .bind(propertyId, buyerId, advertiserId)
+    .run();
+
+  const conversation = await env.DB.prepare(`
+    SELECT *
+    FROM conversations
+    WHERE property_id = ?
+      AND buyer_id = ?
+      AND advertiser_id = ?
+    LIMIT 1
+  `)
+    .bind(propertyId, buyerId, advertiserId)
+    .first();
+
+  return json({
+    success: true,
+    message: "Conversation ready.",
+    conversation
+  }, 201);
+}
+// =========================================
+// JOVA MESSAGING — SEND MESSAGE
+// =========================================
+
+async function handleSendMessage(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid JSON request."
+    }, 400);
+  }
+
+  const conversationId = Number(body.conversation_id);
+  const message = String(body.message || "").trim();
+
+  if (!conversationId || !message) {
+    return json({
+      success: false,
+      message: "Conversation and message are required."
+    }, 400);
+  }
+
+  if (message.length > 5000) {
+    return json({
+      success: false,
+      message: "Messages cannot exceed 5,000 characters."
+    }, 400);
+  }
+
+  const conversation = await env.DB.prepare(`
+    SELECT id, buyer_id, advertiser_id, property_id
+    FROM conversations
+    WHERE id = ?
+      AND (buyer_id = ? OR advertiser_id = ?)
+    LIMIT 1
+  `)
+    .bind(conversationId, auth.user.id, auth.user.id)
+    .first();
+
+  if (!conversation) {
+    return json({
+      success: false,
+      message: "Conversation not found or access denied."
+    }, 404);
+  }
+
+  const result = await env.DB.prepare(`
+    INSERT INTO messages (
+      conversation_id,
+      sender_id,
+      message
+    )
+    VALUES (?, ?, ?)
+  `)
+    .bind(conversationId, auth.user.id, message)
+    .run();
+
+  const timestamp = now();
+
+  await env.DB.prepare(`
+    UPDATE conversations
+    SET
+      last_message = ?,
+      last_message_at = ?,
+      updated_at = ?
+    WHERE id = ?
+  `)
+    .bind(message, timestamp, timestamp, conversationId)
+    .run();
+
+  const recipientId =
+    Number(conversation.buyer_id) === Number(auth.user.id)
+      ? conversation.advertiser_id
+      : conversation.buyer_id;
+
+  await env.DB.prepare(`
+    INSERT INTO notifications (
+      user_id,
+      type,
+      title,
+      message,
+      link
+    )
+    VALUES (?, 'new_message', 'New JOVA message', ?, ?)
+  `)
+    .bind(
+      recipientId,
+      `${auth.user.full_name || "A user"} sent you a message.`,
+      `/messages.html?conversation_id=${conversationId}`
+    )
+    .run();
+
+  return json({
+    success: true,
+    message: "Message sent successfully.",
+    message_id: result.meta.last_row_id
+  }, 201);
+}
+// =========================================
+// JOVA MESSAGING — GET CONVERSATIONS
+// =========================================
+
+async function handleGetConversations(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  const userId = Number(auth.user.id);
+
+  const result = await env.DB.prepare(`
+    SELECT
+      c.id,
+      c.property_id,
+      c.buyer_id,
+      c.advertiser_id,
+      c.last_message,
+      c.last_message_at,
+      c.created_at,
+      p.title AS property_title,
+      CASE
+        WHEN c.buyer_id = ? THEN advertiser.full_name
+        ELSE buyer.full_name
+      END AS other_user_name,
+      CASE
+        WHEN c.buyer_id = ? THEN advertiser.profile_image
+        ELSE buyer.profile_image
+      END AS other_user_image,
+      (
+        SELECT COUNT(*)
+        FROM messages m
+        WHERE m.conversation_id = c.id
+          AND m.sender_id != ?
+          AND m.is_read = 0
+      ) AS unread_count
+    FROM conversations c
+    JOIN properties p ON p.id = c.property_id
+    JOIN users buyer ON buyer.id = c.buyer_id
+    JOIN users advertiser ON advertiser.id = c.advertiser_id
+    WHERE c.buyer_id = ?
+       OR c.advertiser_id = ?
+    ORDER BY
+      COALESCE(c.last_message_at, c.created_at) DESC
+  `)
+    .bind(userId, userId, userId, userId, userId)
+    .all();
+
+  return json({
+    success: true,
+    conversations: result.results || []
+  });
+}
+// =========================================
+// JOVA MESSAGING — GET MESSAGES
+// =========================================
+
+async function handleGetMessages(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  const url = new URL(request.url);
+  const conversationId = Number(
+    url.searchParams.get("conversation_id")
+  );
+
+  if (!conversationId) {
+    return json({
+      success: false,
+      message: "conversation_id is required."
+    }, 400);
+  }
+
+  const conversation = await env.DB.prepare(`
+    SELECT id
+    FROM conversations
+    WHERE id = ?
+      AND (buyer_id = ? OR advertiser_id = ?)
+    LIMIT 1
+  `)
+    .bind(
+      conversationId,
+      auth.user.id,
+      auth.user.id
+    )
+    .first();
+
+  if (!conversation) {
+    return json({
+      success: false,
+      message: "Conversation not found or access denied."
+    }, 404);
+  }
+
+  const result = await env.DB.prepare(`
+    SELECT
+      m.id,
+      m.conversation_id,
+      m.sender_id,
+      m.message,
+      m.is_read,
+      m.created_at,
+      u.full_name AS sender_name
+    FROM messages m
+    JOIN users u ON u.id = m.sender_id
+    WHERE m.conversation_id = ?
+    ORDER BY m.created_at ASC, m.id ASC
+    LIMIT 200
+  `)
+    .bind(conversationId)
+    .all();
+
+  return json({
+    success: true,
+    messages: result.results || []
+  });
+}
+// =========================================
+// JOVA MESSAGING — MARK MESSAGES AS READ
+// =========================================
+
+async function handleMarkMessagesRead(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid JSON request."
+    }, 400);
+  }
+
+  const conversationId = Number(body.conversation_id);
+
+  if (!conversationId) {
+    return json({
+      success: false,
+      message: "conversation_id is required."
+    }, 400);
+  }
+
+  const conversation = await env.DB.prepare(`
+    SELECT id
+    FROM conversations
+    WHERE id = ?
+      AND (buyer_id = ? OR advertiser_id = ?)
+    LIMIT 1
+  `)
+    .bind(conversationId, auth.user.id, auth.user.id)
+    .first();
+
+  if (!conversation) {
+    return json({
+      success: false,
+      message: "Conversation not found or access denied."
+    }, 404);
+  }
+
+  await env.DB.prepare(`
+    UPDATE messages
+    SET is_read = 1
+    WHERE conversation_id = ?
+      AND sender_id != ?
+      AND is_read = 0
+  `)
+    .bind(conversationId, auth.user.id)
+    .run();
+
+  return json({
+    success: true,
+    message: "Messages marked as read."
+  });
+}
+// =========================================
+// JOVA NOTIFICATIONS — MARK AS READ
+// =========================================
+
+async function handleMarkNotificationRead(request, env) {
+  const auth = await requireUserResponse(request, env);
+
+  if (auth.error) {
+    return auth.error;
+  }
+
+  let body;
+
+  try {
+    body = await request.json();
+  } catch {
+    return json({
+      success: false,
+      message: "Invalid JSON request."
+    }, 400);
+  }
+
+  const notificationId = Number(body.notification_id);
+
+  if (!notificationId) {
+    return json({
+      success: false,
+      message: "notification_id is required."
+    }, 400);
+  }
+
+  const result = await env.DB.prepare(`
+    UPDATE notifications
+    SET is_read = 1
+    WHERE id = ?
+      AND user_id = ?
+  `)
+    .bind(notificationId, auth.user.id)
+    .run();
+
+  if (!result.meta.changes) {
+    return json({
+      success: false,
+      message: "Notification not found."
+    }, 404);
+  }
+
+  return json({
+    success: true,
+    message: "Notification marked as read."
+  });
+}
+async function handleHealth(env) {
 async function handleHealth(env) {
   let database = false;
 
@@ -2579,7 +3012,40 @@ if (
   ) {
     return handleMe(request, env);
   }
+  if (
+    path === "/api/conversations" &&
+    method === "GET"
+  ) {
+    return handleGetConversations(request, env);
+  }
 
+  if (
+    path === "/api/conversations" &&
+    method === "POST"
+  ) {
+    return handleStartConversation(request, env);
+  }
+
+  if (
+    path === "/api/messages" &&
+    method === "GET"
+  ) {
+    return handleGetMessages(request, env);
+  }
+
+  if (
+    path === "/api/messages" &&
+    method === "POST"
+  ) {
+    return handleSendMessage(request, env);
+  }
+
+  if (
+    path === "/api/notifications" &&
+    method === "GET"
+  ) {
+    return handleGetNotifications(request, env);
+  }
   if (
     path === "/api/listing-plans" &&
     method === "GET"
