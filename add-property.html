@@ -556,6 +556,42 @@ function getToken(){
     ""
   );
 }
+async function loadUser(){
+  const token = getToken();
+
+  if(!token){
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
+    const response = await fetch(API + "/api/me", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const data = await response.json();
+
+    if(!response.ok || !data.success || !data.user){
+      throw new Error("Unable to load account details.");
+    }
+
+    document.getElementById("advertiser_name").value =
+      data.user.full_name || "";
+
+    document.getElementById("advertiser_phone").value =
+      data.user.phone || "";
+
+    document.getElementById("advertiser_email").value =
+      data.user.email || "";
+
+  } catch(error) {
+    console.error(error);
+    alert("Unable to load your account details. Please log in again.");
+    window.location.href = "login.html";
+  }
+}
 
 function value(id){
   return document.getElementById(id).value.trim();
