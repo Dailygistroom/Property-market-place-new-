@@ -2439,9 +2439,16 @@ document
             method: "POST",
 
             headers: {
-              "Content-Type":
-                "application/json"
-            },
+  "Content-Type": "application/json",
+  "Authorization": "Bearer " + (
+    localStorage.getItem("token") ||
+    localStorage.getItem("auth_token") ||
+    localStorage.getItem("session_token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("jova_token") ||
+    ""
+  )
+},
 
             body: JSON.stringify({
 
