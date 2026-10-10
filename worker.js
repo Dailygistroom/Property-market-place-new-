@@ -1085,36 +1085,26 @@ async function handleCreateProperty(request, env) {
   ).trim().toLowerCase();
 
   const propertyType = String(
-    body.property_type ||
-    ""
+    body.property_type || ""
   ).trim();
 
   const price = Number(body.price);
 
-  const area = String(
-  body.area || ""
-).trim();
+  const address = String(
+    body.address || ""
+  ).trim();
 
-const estate = String(
-  body.estate || ""
-).trim();
+  const city = String(
+    body.city || ""
+  ).trim();
 
-const address = String(
-  body.address || ""
-).trim();
+  const state = body.state
+    ? String(body.state).trim()
+    : null;
 
-const city = String(
-  body.city || ""
-).trim();
-
-const state = body.state
-  ? String(body.state).trim()
-  : null;
-
-const country = String(
-  body.country || "Nigeria"
-).trim();
-
+  const country = String(
+    body.country || "Nigeria"
+  ).trim();
 
   const bedrooms = Number(body.bedrooms || 0);
   const bathrooms = Number(body.bathrooms || 0);
@@ -1141,8 +1131,8 @@ const country = String(
     "shortlet",
   ];
 
-   if (!title || !description || !propertyType || !city){
-  return json(
+  if (!title || !description || !propertyType || !city) {
+    return json(
       {
         success: false,
         message: "Please complete all required property fields.",
@@ -1182,12 +1172,6 @@ const country = String(
 
   const count = Number(activeCount?.count || 0);
 
-  /*
-    The free plan allows the first three active listings.
-    Paid listing plans can be introduced through the payment
-    flow later.
-  */
-
   if (count >= 3) {
     return json(
       {
@@ -1211,18 +1195,10 @@ const country = String(
       currency,
       address,
       city,
-     state,
-     country,
-      
-     
-     latitude,
-     longitude,
-      
-      
-      
-      
-      
-      
+      state,
+      country,
+      latitude,
+      longitude,
       bedrooms,
       bathrooms,
       toilets,
@@ -1250,12 +1226,8 @@ const country = String(
       city,
       state,
       country,
-      
-      
-body.latitude ?? null,
-body.longitude ?? null,
-      
-      
+      body.latitude ?? null,
+      body.longitude ?? null,
       bedrooms,
       bathrooms,
       toilets,
