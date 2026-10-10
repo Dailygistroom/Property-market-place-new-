@@ -1213,8 +1213,8 @@ const country = String(
       city,
      state,
      country,
-      area,
-     estate,
+      
+     
      latitude,
      longitude,
       
