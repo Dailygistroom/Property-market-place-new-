@@ -2458,15 +2458,15 @@ document
 
               description: description,
 
-              category:
-                purpose.toLowerCase(),
+        listing_type:
+  purpose.toLowerCase(),
 
               property_type:
                 propertyType.toLowerCase(),
 
               price: price,
 
-              location: location,
+              city: location,
 
               bedrooms: bedrooms,
 
@@ -2485,7 +2485,7 @@ document
         await response.json();
 
 
-      if (!response.ok || !result.ok) {
+      if (!response.ok || !result.success) {
 
         throw new Error(
           result.error ||
