@@ -1250,8 +1250,8 @@ const country = String(
       city,
       state,
       country,
-      area,
-      estate,
+      
+      
 body.latitude ?? null,
 body.longitude ?? null,
       
