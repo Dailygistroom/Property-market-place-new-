@@ -565,7 +565,7 @@ async function loadUser(){
   }
 
   try {
-    const response = await fetch(API + "/api/me", {
+  const response = await fetch(API + "/api/auth/me", {
       headers: {
         "Authorization": "Bearer " + token
       }
