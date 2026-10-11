@@ -2359,7 +2359,29 @@ document
   .addEventListener("submit", async function(event) {
 
     event.preventDefault();
+document
+  .getElementById("propertyForm")
+  .addEventListener("submit", async function(event) {
 
+    event.preventDefault();
+
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("auth_token") ||
+      localStorage.getItem("session_token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("jova_token") ||
+      "";
+
+    if (!token) {
+      alert("Please log in before submitting a property.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const form = this;
+
+    // The existing code continues here...
     const form = this;
 
     const fields =
