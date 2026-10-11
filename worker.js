@@ -1555,7 +1555,7 @@ async function handleImageUpload(request, env) {
 
   const currentCount = Number(existing?.count || 0);
 
-  if (currentCount >= 6) {
+  if (currentCount >= 10) {
     return json(
       {
         success: false,
@@ -1578,12 +1578,12 @@ async function handleImageUpload(request, env) {
     );
   }
 
-  if (currentCount + files.length > 6) {
+  if (currentCount + files.length > 10) {
     return json(
       {
         success: false,
         message: `You can upload only ${
-          6 - currentCount
+          10 - currentCount
         } more image(s).`,
       },
       400
@@ -1657,7 +1657,40 @@ async function handleImageUpload(request, env) {
   });
 }
 
-async function handleCreateEnquiry(request, env) {
+async function handleGetPropertyImage(request, env) {
+  const url = new URL(request.url);
+  const key = url.searchParams.get("key");
+
+  if (!key || !/^properties\/\d+\/[a-zA-Z0-9._-]+$/.test(key)) {
+    return text("Invalid image key.", 400);
+  }
+
+  if (!env.PROPERTY_IMAGES) {
+    return text("Image storage is unavailable.", 500);
+  }
+
+  const image = await env.PROPERTY_IMAGES.get(key);
+
+  if (!image) {
+    return text("Image not found.", 404);
+  }
+
+  const headers = new Headers(CORS_HEADERS);
+
+  headers.set(
+    "Content-Type",
+    image.httpMetadata?.contentType || "application/octet-stream"
+  );
+
+  headers.set("Cache-Control", "public, max-age=3600");
+  headers.set("X-Content-Type-Options", "nosniff");
+
+  return new Response(image.body, {
+    status: 200,
+    headers,
+  });
+}
+  async function handleCreateEnquiry(request, env) {
   let body;
 
   try {
