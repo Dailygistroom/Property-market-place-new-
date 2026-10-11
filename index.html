@@ -2495,12 +2495,12 @@ document
       form.reset();
 
 
-    } catch (error) {
+        } catch (error) {
 
       console.error(error);
 
       alert(
-      alert(error.message || "We could not submit your property. Please try again.");
+        error.message || "We could not submit your property. Please try again."
       );
 
     } finally {
@@ -2509,6 +2509,8 @@ document
 
       submitButton.textContent =
         "Submit Property Listing";
+
+    }
 
     }
 
