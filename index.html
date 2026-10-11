@@ -2359,11 +2359,6 @@ document
   .addEventListener("submit", async function(event) {
 
     event.preventDefault();
-document
-  .getElementById("propertyForm")
-  .addEventListener("submit", async function(event) {
-
-    event.preventDefault();
 
     const token =
       localStorage.getItem("token") ||
@@ -2382,7 +2377,7 @@ document
     const form = this;
 
     // The existing code continues here...
-    const form = this;
+    
 
     const fields =
       form.querySelectorAll(
