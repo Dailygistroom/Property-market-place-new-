@@ -1401,257 +1401,154 @@
 
   <div class="form-card">
 
-    <form id="propertyForm">
-
-      <div class="form-grid">
-
-
-        <div class="form-group full">
-
-          <label>
-            Property Title
-          </label>
-
-          <input
-            type="text"
-            required
-            placeholder="e.g. Luxury 4 Bedroom Duplex"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Property Type
-          </label>
-
-          <select required>
-
-            <option value="">
-              Select property type
-            </option>
-
-            <option>
-              House
-            </option>
-
-            <option>
-              Duplex
-            </option>
-
-            <option>
-              Apartment
-            </option>
-
-            <option>
-              Land
-            </option>
-
-            <option>
-              Commercial Property
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Purpose
-          </label>
-
-          <select required>
-
-            <option value="">
-              Select purpose
-            </option>
-
-            <option value="sale">For Sale</option>
-<option value="rent">For Rent</option>
-<option value="shortlet">Shortlet</option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Price
-          </label>
-
-          <input
-            type="number"
-            required
-            placeholder="Enter price"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Location
-          </label>
-
-          <input
-            type="text"
-            required
-            placeholder="e.g. Lekki Phase 1"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Bedrooms
-          </label>
-
-          <input
-            type="number"
-            min="0"
-            placeholder="Number of bedrooms"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Bathrooms
-          </label>
-
-          <input
-            type="number"
-            min="0"
-            placeholder="Number of bathrooms"
-          >
-
-        </div>
-
-
-        <div class="form-group full">
-
-          <label>
-            Property Description
-          </label>
-
-          <textarea
-            required
-            placeholder="Describe the property..."
-          ></textarea>
-
-        </div>
-
-
-        <div class="form-group full">
-
-          <label>
-            Features / Amenities
-          </label>
-
-          <textarea
-            placeholder="e.g. Swimming pool, parking, security, BQ..."
-          ></textarea>
-
-        </div>
-
-
-        <div class="form-group full">
-
-          <label>
-            Property Photos
-          </label>
-
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onchange="checkPhotos(this)"
-          >
-
-          <div class="photo-note">
-            Maximum 6 photos can be uploaded for one property.
-          </div>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Your Name
-          </label>
-
-          <input
-            type="text"
-            required
-            placeholder="Agent / Landlord / Developer"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            Phone / WhatsApp
-          </label>
-
-          <input
-            type="tel"
-            required
-            placeholder="Phone or WhatsApp number"
-          >
-
-        </div>
-
-
-        <div class="form-group full">
-
-          <label>
-            Email
-          </label>
-
-          <input
-            type="email"
-            placeholder="Email address"
-          >
-
-        </div>
-
-      </div>
-
-
-      <div class="form-actions">
-
-        <button
-          type="submit"
-          class="gold-button"
-        >
-          Submit Property Listing
-        </button>
-
-        <button
-          type="button"
-          class="close-button"
-          onclick="closeListingForm()"
-        >
-          Cancel
-        </button>
-
-      </div>
-
-    </form>
+  <form id="propertyForm">
+
+  <!-- ACCOUNT TYPE -->
+  <div class="form-group">
+    <label for="accountType">Account Type *</label>
+    <select id="accountType" required>
+      <option value="">Select Account Type</option>
+      <option value="agent">Agent</option>
+      <option value="landlord">Landlord</option>
+      <option value="developer">Developer</option>
+    </select>
+  </div>
+
+  <!-- PROPERTY TITLE -->
+  <div class="form-group">
+    <label for="propertyTitle">Property Title *</label>
+    <input
+      type="text"
+      id="propertyTitle"
+      placeholder="e.g. Luxury 4 Bedroom Duplex"
+      required
+    >
+  </div>
+
+  <!-- PROPERTY TYPE -->
+  <div class="form-group">
+    <label for="propertyType">Property Type *</label>
+    <select id="propertyType" required>
+      <option value="">Select Property Type</option>
+      <option value="flat">Flat</option>
+      <option value="duplex">Duplex</option>
+      <option value="semi-detached duplex">Semi-Detached Duplex</option>
+      <option value="terrace duplex">Terrace Duplex</option>
+      <option value="fully detached duplex">Fully Detached Duplex</option>
+      <option value="bungalow">Bungalow</option>
+      <option value="apartment">Apartment</option>
+      <option value="house">House</option>
+      <option value="land">Land</option>
+      <option value="commercial property">Commercial Property</option>
+    </select>
+  </div>
+
+  <!-- PURPOSE -->
+  <div class="form-group">
+    <label for="propertyPurpose">Purpose *</label>
+    <select id="propertyPurpose" required>
+      <option value="">Select Purpose</option>
+      <option value="sale">For Sale</option>
+      <option value="rent">For Rent</option>
+      <option value="shortlet">Shortlet</option>
+    </select>
+  </div>
+
+  <!-- PRICE -->
+  <div class="form-group">
+    <label for="propertyPrice">Price (₦) *</label>
+    <input
+      type="number"
+      id="propertyPrice"
+      min="1"
+      placeholder="Enter price"
+      required
+    >
+  </div>
+
+  <!-- LOCATION -->
+  <div class="form-group">
+    <label for="propertyLocation">Property Location *</label>
+    <input
+      type="text"
+      id="propertyLocation"
+      placeholder="e.g. Lekki Phase 1, Lagos"
+      required
+    >
+  </div>
+
+  <!-- BEDROOMS -->
+  <div class="form-group">
+    <label for="propertyBedrooms">Bedrooms</label>
+    <input
+      type="number"
+      id="propertyBedrooms"
+      min="0"
+      placeholder="Number of bedrooms"
+    >
+  </div>
+
+  <!-- BATHROOMS -->
+  <div class="form-group">
+    <label for="propertyBathrooms">Bathrooms</label>
+    <input
+      type="number"
+      id="propertyBathrooms"
+      min="0"
+      placeholder="Number of bathrooms"
+    >
+  </div>
+
+  <!-- DESCRIPTION -->
+  <div class="form-group">
+    <label for="propertyDescription">Property Description *</label>
+    <textarea
+      id="propertyDescription"
+      rows="5"
+      placeholder="Describe the property..."
+      required
+    ></textarea>
+  </div>
+
+  <!-- AMENITIES -->
+  <div class="form-group">
+    <label for="propertyAmenities">Features and Amenities</label>
+    <textarea
+      id="propertyAmenities"
+      rows="3"
+      placeholder="e.g. Swimming pool, parking, security, fitted kitchen"
+    ></textarea>
+  </div>
+
+  <!-- PROPERTY PHOTOS -->
+  <div class="form-group">
+    <label for="propertyPhotos">Property Photos</label>
+    <input
+      type="file"
+      id="propertyPhotos"
+      accept="image/*"
+      multiple
+      onchange="checkPhotos(this)"
+    >
+    <small>You can select a maximum of 10 photos.</small>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">
+      Submit Property Listing
+    </button>
+
+    <button
+      type="button"
+      class="close-button"
+      onclick="closeListingForm()"
+    >
+      Cancel
+    </button>
+  </div>
+
+</form>  
 
   </div>
 
