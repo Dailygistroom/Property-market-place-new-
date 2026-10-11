@@ -2991,7 +2991,9 @@ async function routeApi(request, env) {
       headers: CORS_HEADERS,
     });
   }
-
+if (path === "/api/images" && method === "GET") {
+  return handleGetPropertyImage(request, env);
+}
   if (
     path === "/api/health" ||
     path === "/health"
