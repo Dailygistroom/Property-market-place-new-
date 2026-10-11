@@ -362,10 +362,10 @@
         }
 
         if (!response.ok || !data.success) {
-          throw new Error(
-            data.error || "Incorrect email or password."
-          );
-        }
+  throw new Error(
+    data.message || data.error || "Incorrect email or password."
+  );
+}
 
         if (data.token) {
           localStorage.setItem(
