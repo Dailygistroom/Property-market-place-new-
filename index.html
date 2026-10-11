@@ -2356,8 +2356,7 @@ function searchProperties() {
 
 document
   .getElementById("propertyForm")
-  .addEventListener("submit", async function(event) {
-
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const token =
@@ -2375,44 +2374,21 @@ document
     }
 
     const form = this;
+    const fields = form.querySelectorAll("input, select, textarea");
 
-    // The existing code continues here...
-    
-
-    const fields =
-      form.querySelectorAll(
-        "input, select, textarea"
-      );
-
-    const title =
-      fields[0].value.trim();
-
-    const propertyType =
-      fields[1].value.trim();
-
-    const purpose =
-      fields[2].value.trim();
-
-    const price =
-      Number(fields[3].value || 0);
-
-    const location =
-      fields[4].value.trim();
-
-    const bedrooms =
-      Number(fields[5].value || 0);
-
-    const bathrooms =
-      Number(fields[6].value || 0);
-
-    const description =
-      fields[7].value.trim();
-
-    const amenities =
-      fields[8].value.trim();
-
+    const accountType = fields[0].value.trim();
+    const title = fields[1].value.trim();
+    const propertyType = fields[2].value.trim();
+    const purpose = fields[3].value.trim();
+    const price = Number(fields[4].value);
+    const location = fields[5].value.trim();
+    const bedrooms = Number(fields[6].value || 0);
+    const bathrooms = Number(fields[7].value || 0);
+    const description = fields[8].value.trim();
+    const amenities = fields[9].value.trim();
 
     if (
+      !accountType ||
       !title ||
       !propertyType ||
       !purpose ||
@@ -2420,118 +2396,81 @@ document
       !location ||
       !description
     ) {
-
-      alert(
-        "Please complete all required property details."
-      );
-
+      alert("Please complete all required property details.");
       return;
     }
 
+    if (price <= 0) {
+      alert("Please enter a valid property price.");
+      return;
+    }
 
-    const submitButton =
-      form.querySelector(
-        'button[type="submit"]'
-      );
+    const photoInput = form.querySelector('input[type="file"]');
+    const photos = photoInput ? photoInput.files : [];
 
+    if (photos.length > 10) {
+      alert("You can upload a maximum of 10 photos.");
+      return;
+    }
+
+    const submitButton = form.querySelector('button[type="submit"]');
 
     submitButton.disabled = true;
-
-    submitButton.textContent =
-      "Submitting...";
-
+    submitButton.textContent = "Submitting...";
 
     try {
-
-      const response =
-        await fetch(
-          "https://property-marketplace-api.dailygistroom.workers.dev/api/properties",
-          {
-            method: "POST",
-
-            headers: {
-  "Content-Type": "application/json",
-  "Authorization": "Bearer " + (
-    localStorage.getItem("token") ||
-    localStorage.getItem("auth_token") ||
-    localStorage.getItem("session_token") ||
-    localStorage.getItem("authToken") ||
-    localStorage.getItem("jova_token") ||
-    ""
-  )
-},
-
-            body: JSON.stringify({
-
-              title: title,
-
-              description: description,
-
-        listing_type:
-  purpose.toLowerCase(),
-
-              property_type:
-                propertyType.toLowerCase(),
-
-              price: price,
-
-              city: location,
-
-              bedrooms: bedrooms,
-
-              bathrooms: bathrooms,
-
-              area: "",
-
-              amenities: amenities
-
-            })
-          }
-        );
-
-
-      const result =
-        await response.json();
-
-
-      if (!response.ok || !result.success) {
-
-  throw new Error(
-    result.message ||
-    result.error ||
-    "Unable to submit property."
-  );
-
-}
-
-
-      alert(
-        "Property listing submitted successfully!"
+      const response = await fetch(
+        "https://property-marketplace-api.dailygistroom.workers.dev/api/properties",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            title: title,
+            description: description,
+            listing_type: purpose.toLowerCase(),
+            property_type: propertyType.toLowerCase(),
+            price: price,
+            city: location,
+            bedrooms: bedrooms,
+            bathrooms: bathrooms,
+            area: "",
+            amenities: amenities,
+            account_type: accountType.toLowerCase()
+          })
+        }
       );
 
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message ||
+          result.error ||
+          "Unable to submit property."
+        );
+      }
+
+      alert(
+        "Property submitted successfully! It may need approval before appearing publicly."
+      );
 
       form.reset();
 
-
-        } catch (error) {
-
-      console.error(error);
+    } catch (error) {
+      console.error("Property submission error:", error);
 
       alert(
-        error.message || "We could not submit your property. Please try again."
+        error.message ||
+        "We could not submit your property. Please try again."
       );
 
     } finally {
-
       submitButton.disabled = false;
-
-      submitButton.textContent =
-        "Submit Property Listing";
-
+      submitButton.textContent = "Submit Property Listing";
     }
-
-    
-
   });
 
 </script>
