@@ -2479,12 +2479,13 @@ document
 
       if (!response.ok || !result.success) {
 
-        throw new Error(
-          result.error ||
-          "Unable to submit property."
-        );
+  throw new Error(
+    result.message ||
+    result.error ||
+    "Unable to submit property."
+  );
 
-      }
+}
 
 
       alert(
