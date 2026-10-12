@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Dashboard | JOVA</title>
+
+<meta name="theme-color" content="#0A1628">
+<meta name="description" content="Manage your JOVA property listings, messages, notifications and promotions.">
+
+<style>
+:root {
+  --navy: #0A1628;
+  --navy-light: #14243D;
+  --gold: #D9B66F;
+  --gold-dark: #B89449;
+  --cream: #F8F5EE;
+  --white: #FFFFFF;
+  --text: #1B2638;
+  --muted: #788397;
+  --border: #E5E7EB;
+  --green: #267347;
+  --red: #B42318;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Arial, sans-serif;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.topbar {
+  background: var(--navy);
+  color: white;
+  min-height: 72px;
+  padding: 15px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid rgba(217,182,111,.3);
+}
+
+.logo {
+  color: var(--gold);
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+.logo small {
+  display: block;
+  color: white;
+  font-size: 9px;
+  letter-spacing: 2px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-button {
+  color: white;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 20px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 800;
+  margin-left: 4px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 245px minmax(0,1fr);
+  min-height: calc(100vh - 72px);
+}
+
+.sidebar {
+  background: var(--navy);
+  color: white;
+  padding: 24px 14px;
+}
+
+.sidebar-label {
+  color: #AAB4C4;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 12px;
+}
+
+.nav-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 12px;
+  margin: 3px 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #E7EAF0;
+  text-align: left;
+  font-size: 13px;
+}
+
+.nav-button:hover,
+.nav-button.active {
+  background: var(--navy-light);
+  border-color: rgba(217,182,111,.4);
+  color: var(--gold);
+}
+
+.nav-button .nav-icon {
+  width: 22px;
+  text-align: center;
+  font-size: 17px;
+}
+
+.nav-button.promotion-nav {
+  color: var(--gold);
+  background: rgba(217,182,111,.08);
+  border-color: rgba(217,182,111,.25);
+}
+
+main {
+  width: 100%;
+  max-width: 1450px;
+  min-width: 0;
+  margin: auto;
+  padding: 28px;
+}
+
+.section {
+  display: none;
+  animation: appear .2s ease;
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes appear {
+  from { opacity: .65; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.page-heading h1 {
+  color: var(--navy);
+  font-size: 29px;
+  letter-spacing: -.7px;
+  margin: 0 0 8px;
+}
+
+.page-heading p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 15px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.button.primary {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+.button.gold {
+  background: var(--gold);
+  color: var(--navy);
+  border-color: var(--gold);
+}
+
+.button.danger {
+  color: var(--red);
+  border-color: #E9B7B2;
+}
+
+.button:hover {
+  filter: brightness(.97);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat {
+  background: white;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+
+.stat-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stat-icon {
+  font-size: 21px;
+}
+
+.stat strong {
+  display: block;
+  color: var(--navy);
+  font-size: 29px;
+  margin-top: 15px;
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 22px;
+  min-width: 0;
+}
+
+.card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 19px;
+}
+
+.card-heading h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.promo-hero {
+  background:
+    radial-gradient(ellipse at 100% 0%,
+      rgba(217,182,111,.18), transparent 48%),
+    var(--navy);
+  border: 1px solid rgba(217,182,111,.6);
+  border-radius: 22px;
+  padding: 30px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.promo-hero::after {
+  content: "✦";
+  position: absolute;
+  right: 22px;
+  top: 5px;
+  font-size: 105px;
+  color: rgba(217,182,111,.12);
+  pointer-events: none;
+}
+
+.promo-kicker {
+  color: var(--gold);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.promo-hero h2 {
+  max-width: 600px;
+  font-size: clamp(27px,4vw,42px);
+  line-height: 1.15;
+  margin: 14px 0;
+}
+
+.promo-hero p {
+  max-width: 560px;
+  color: #E0E5ED;
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 15px;
+  margin-bottom: 24px;
+}
+
+.promo-card {
+  background: white;
+  border: 1px solid rgba(217,182,111,.65);
+  border-radius: var(--radius);
+  padding: 21px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-card::before {
+  content: "";
+  position: absolute;
+  height: 4px;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: var(--gold);
+}
+
+.promo-card h3 {
+  color: var(--navy);
+  margin: 13px 0 9px;
+  font-size: 18px;
+}
+
+.promo-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  flex: 1;
+}
+
+.promo-card .price {
+  color: var(--navy);
+  font-size: 23px;
+  font-weight: 900;
+  margin: 13px 0;
+}
+
+.promo-card .button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.property-list,
+.notification-list,
+.conversation-list,
+.plan-list,
+.payment-list,
+.enquiry-list,
+.promotion-list {
+  display: grid;
+  gap: 13px;
+}
+
+.property {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 175px minmax(0,1fr);
+  background: white;
+}
+
+.property-image {
+  width: 100%;
+  height: 100%;
+  min-height: 175px;
+  object-fit: cover;
+  background: var(--cream);
+}
+
+.property-body {
+  padding: 17px;
+  min-width: 0;
+}
+
+.property-title {
+  color: var(--navy);
+  font-size: 17px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.property-price {
+  color: var(--navy);
+  font-size: 19px;
+  font-weight: 900;
+  margin: 12px 0;
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 30px;
+  padding: 5px 9px;
+  font-size: 11px;
+  text-transform: capitalize;
+  font-weight: 700;
+  background: #EEF0F3;
+  color: var(--navy);
+}
+
+.badge.active {
+  background: #E8F5EC;
+  color: var(--green);
+}
+
+.badge.gold {
+  background: #FBF3DF;
+  color: #805D19;
+}
+
+.badge.expired,
+.badge.failed {
+  background: #FCEAE8;
+  color: var(--red);
+}
+
+.notification {
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+}
+
+.notification.unread {
+  border-left: 4px solid var(--gold);
+  background: #FFFCF5;
+}
+
+.notification h3 {
+  margin: 0 0 7px;
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.notification p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.notification small {
+  display: block;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.conversation {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.conversation.selected {
+  border-color: var(--gold-dark);
+  background: #FFFCF5;
+}
+
+.conversation h3 {
+  color: var(--navy);
+  margin: 0 0 6px;
+}
+
+.conversation p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.message-panel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: white;
+}
+
+.message-heading {
+  padding: 16px;
+  background: var(--navy);
+  color: white;
+}
+
+.message-heading h3 {
+  margin: 0 0 5px;
+}
+
+.message-heading p {
+  margin: 0;
+  color: #D8DFE9;
+  font-size: 12px;
+}
+
+.messages {
+  max-height: 370px;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-bubble {
+  max-width: 85%;
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.message-bubble.mine {
+  align-self: flex-end;
+  background: var(--navy);
+  color: white;
+}
+
+.message-compose {
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.message-compose input {
+  min-width: 0;
+  flex: 1;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 7px;
+  color: var(--navy);
+}
+
+.field input,
+.field textarea,
+.field select,
+.message-compose input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #D9DEE7;
+  border-radius: 9px;
+  background: white;
+  color: var(--text);
+  outline: none;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus,
+.message-compose input:focus {
+  border-color: var(--gold-dark);
+}
+
+.field textarea {
+  min-height: 125px;
+  resize: vertical;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 15px;
+}
+
+.empty {
+  text-align: center;
+  padding: 30px 15px;
+  color: var(--muted);
+  line-height: 1.8;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+.alert {
+  display: none;
+  padding: 13px 15px;
+  border-radius: 10px;
+  background: #FBF3DF;
+  border: 1px solid #E8D29E;
+  color: var(--navy);
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.alert.error {
+  background: #FCEAE8;
+  border-color: #E9B7B2;
+  color: var(--red);
+}
+
+footer {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 25px 10px;
+}
+
+.mobile-nav {
+  display: none;
+}
+
+@media(max-width:1000px) {
+  .stats {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  .promo-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+
+  main {
+    padding: 22px;
+  }
+}
+
+@media(max-width:720px) {
+  .layout {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  main {
+    padding: 19px 13px 100px;
+  }
+
+  .topbar {
+    min-height: 65px;
+    padding: 12px 14px;
+  }
+
+  .logo {
+    font-size: 23px;
+  }
+
+  .page-heading h1 {
+    font-size: 25px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .promo-hero {
+    padding: 24px 19px;
+  }
+
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .property {
+    grid-template-columns: 1fr;
+  }
+
+  .property-image {
+    height: 195px;
+    min-height: 0;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    z-index: 30;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--navy);
+    border-top: 1px solid rgba(217,182,111,.45);
+    padding: 7px 2px calc(7px + env(safe-area-inset-bottom));
+    justify-content: space-around;
+  }
+
+  .mobile-nav button {
+    border: 0;
+    background: transparent;
+    color: #E1E6EE;
+    padding: 6px 3px;
+    min-width: 0;
+    flex: 1;
+    font-size: 10px;
+  }
+
+  .mobile-nav button span {
+    display: block;
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+
+  .mobile-nav button.active {
+    color: var(--gold);
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat {
+    padding: 15px;
+  }
+
+  .stat strong {
+    font-size: 25px;
+  }
+
+  .message-compose {
+    flex-wrap: wrap;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <a href="/index.html" class="logo">
+    JOVA
+    <small>PROPERTY MARKETPLACE</small>
+  </a>
+
+  <div class="top-actions">
+    <button class="icon-button" onclick="showSection('notifications')">
+      🔔 <span class="count" id="top-unread">0</span>
+    </button>
+
+    <button class="icon-button" id="logout-button">
+      Log out
+    </button>
+  </div>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-label">Workspace</div>
+
+  <button class="nav-button active" data-section="overview">
+    <span class="nav-icon">⌂</span> Overview
+  </button>
+
+  <button class="nav-button" data-section="properties">
+    <span class="nav-icon">▦</span> My Properties
+  </button>
+
+  <button class="nav-button" data-section="messages">
+    <span class="nav-icon">✉</span> Messages
+  </button>
+
+  <button class="nav-button" data-section="enquiries">
+    <span class="nav-icon">☷</span> Enquiries
+  </button>
+
+  <button class="nav-button" data-section="notifications">
+    <span class="nav-icon">♢</span> Notifications
+  </button>
+
+  <div class="sidebar-label">Growth & Revenue</div>
+
+  <button class="nav-button promotion-nav" data-section="promotions">
+    <span class="nav-icon">✦</span> Promotions & Boosts
+  </button>
+
+  <button class="nav-button" data-section="subscriptions">
+    <span class="nav-icon">♛</span> Subscriptions
+  </button>
+
+  <button class="nav-button" data-section="payments">
+    <span class="nav-icon">₦</span> Payment History
+  </button>
+
+  <div class="sidebar-label">Account</div>
+
+  <button class="nav-button" data-section="profile">
+    <span class="nav-icon">◎</span> My Profile
+  </button>
+
+  <button class="nav-button" data-section="support">
+    <span class="nav-icon">?</span> Help & Support
+  </button>
+</aside>
+
+<main>
+
+<div id="global-alert" class="alert" role="status"></div>
+
+<!-- OVERVIEW -->
+
+<section class="section active" id="section-overview">
+
+  <div class="page-heading">
+    <div>
+      <h1>Welcome back, <span id="welcome-name">there</span></h1>
+      <p>Manage your properties and grow your presence on JOVA.</p>
+    </div>
+
+    <a class="button primary" href="/add-property.html">
+      + Add Property
+    </a>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-top">
+        <span class="stat-label">Total Properties</span>
+        <span class="stat-icon">⌂</span>
+      </div>
+      <strong id="stat-total">—</strong>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span class="stat-label">Active Listings</span>
+        <span class="stat-icon">✓</span>
+      </div>
+      <strong id="stat-active">—</strong>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span class="stat-label">Property Views</span>
+        <span class="stat-icon">◉</span>
+      </div>
+      <strong id="stat-views">—</strong>
+    </div>
+
+    <div class="stat">
+      <div class="stat-top">
+        <span class="stat-label">Unread Notifications</span>
+        <span class="stat-icon">♢</span>
+      </div>
+      <strong id="stat-unread">—</strong>
+    </div>
+  </div>
+
+  <div class="promo-hero">
+    <div class="promo-kicker">JOVA Property Spotlight</div>
+
+    <h2>Give Your Property the Attention It Deserves.</h2>
+
+    <p>
+      Stand out in the marketplace. Explore available boosts
+      and promotional packages to give your property greater
+      visibility and help more prospective buyers and tenants
+      discover your listing.
+    </p>
+
+    <button class="button gold" onclick="showSection('promotions')">
+      Explore Promotions & Boosts →
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Recently Added Properties</h2>
+      <button class="button" onclick="showSection('properties')">
+        View All
+      </button>
+    </div>
+
+    <div class="property-list" id="recent-properties">
+      <div class="empty">Loading your properties...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Recent Notifications</h2>
+      <button class="button" onclick="showSection('notifications')">
+        View All
+      </button>
+    </div>
+
+    <div class="notification-list" id="recent-notifications">
+      <div class="empty">Loading notifications...</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- MY PROPERTIES -->
+
+<section class="section" id="section-properties">
+
+  <div class="page-heading">
+    <div>
+      <h1>My Properties</h1>
+      <p>Manage the properties listed under your account.</p>
+    </div>
+
+    <a class="button primary" href="/add-property.html">
+      + Add Property
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Your Listings</h2>
+      <button class="button" onclick="loadProperties()">Refresh</button>
+    </div>
+
+    <div class="property-list" id="all-properties">
+      <div class="empty">Loading your properties...</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- MESSAGES -->
+
+<section class="section" id="section-messages">
+
+  <div class="page-heading">
+    <div>
+      <h1>Messages</h1>
+      <p>Communicate with buyers, tenants and property advertisers.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Your Conversations</h2>
+      <button class="button" onclick="loadConversations()">Refresh</button>
+    </div>
+
+    <div class="conversation-list" id="conversations">
+      <div class="empty">Loading conversations...</div>
+    </div>
+  </div>
+
+  <div class="card" id="message-window" hidden>
+    <div class="message-panel">
+      <div class="message-heading">
+        <h3 id="conversation-title">Conversation</h3>
+        <p id="conversation-subtitle"></p>
+      </div>
+
+      <div class="messages" id="messages-list"></div>
+
+      <form class="message-compose" id="send-message-form">
+        <input id="message-input"
+          maxlength="5000"
+          placeholder="Write a message..."
+          autocomplete="off"
+          required>
+
+        <button class="button gold" type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+</section>
+
+<!-- ENQUIRIES -->
+
+<section class="section" id="section-enquiries">
+
+  <div class="page-heading">
+    <div>
+      <h1>Property Enquiries</h1>
+      <p>Review enquiries about properties you have listed.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="alert" id="enquiries-note" style="display:block">
+      Enquiry management requires a private backend endpoint.
+      The current Worker accepts public enquiries but does not
+      yet provide an endpoint for retrieving them by property owner.
+    </div>
+
+    <div class="enquiry-list" id="enquiries-list">
+      <div class="empty">
+        Enquiries will appear here once the owner-only enquiry
+        endpoint is connected.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- NOTIFICATIONS -->
+
+<section class="section" id="section-notifications">
+
+  <div class="page-heading">
+    <div>
+      <h1>Notifications</h1>
+      <p>Stay informed about activity on your JOVA account.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Your Notifications</h2>
+      <button class="button" onclick="loadNotifications()">Refresh</button>
+    </div>
+
+    <div class="notification-list" id="all-notifications">
+      <div class="empty">Loading notifications...</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- PROMOTIONS -->
+
+<section class="section" id="section-promotions">
+
+  <div class="page-heading">
+    <div>
+      <h1>Promotions & Boosts</h1>
+      <p>Put your properties in the spotlight.</p>
+    </div>
+  </div>
+
+  <div class="promo-hero">
+    <div class="promo-kicker">JOVA Property Marketing</div>
+
+    <h2>Make Your Listing Impossible to Ignore.</h2>
+
+    <p>
+      Give your property an opportunity to stand out with
+      JOVA's available promotion packages. Choose your property,
+      review the price and duration, and complete payment securely.
+    </p>
+
+    <button class="button gold" onclick="loadPromotionPlans()">
+      View Available Packages ↓
+    </button>
+  </div>
+
+  <div class="promo-grid" id="promotion-plans">
+    <div class="empty">Loading promotion packages...</div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>My Boosted Properties</h2>
+      <button class="button" onclick="loadMyPromotions()">Refresh</button>
+    </div>
+
+    <div class="promotion-list" id="my-promotions">
+      <div class="empty">
+        Active promotion management will appear here when
+        the promotion-history endpoint is connected.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- SUBSCRIPTIONS -->
+
+<section class="section" id="section-subscriptions">
+
+  <div class="page-heading">
+    <div>
+      <h1>Subscriptions</h1>
+      <p>Explore plans and review your listing allowance.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Available Listing Plans</h2>
+      <button class="button" onclick="loadListingPlans()">Refresh</button>
+    </div>
+
+    <div class="plan-list" id="listing-plans">
+      <div class="empty">Loading available plans...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--navy)">Your Current Subscription</h2>
+
+    <p class="muted">
+      Your account and listing allowance are managed by JOVA.
+      Current subscription details will appear here once the
+      account-subscription endpoint is connected.
+    </p>
+
+    <div id="current-subscription"></div>
+  </div>
+
+</section>
+
+<!-- PAYMENTS -->
+
+<section class="section" id="section-payments">
+
+  <div class="page-heading">
+    <div>
+      <h1>Payment History</h1>
+      <p>Review your JOVA listing and promotion payments.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="alert" style="display:block">
+      Your Worker currently supports payment initialization
+      and verification, but it does not yet expose a payment
+      history endpoint for the dashboard.
+    </div>
+
+    <div class="payment-list" id="payment-history">
+      <div class="empty">
+        Payment history will appear here after the
+        authenticated payment-history endpoint is connected.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- PROFILE -->
+
+<section class="section" id="section-profile">
+
+  <div class="page-heading">
+    <div>
+      <h1>My Profile</h1>
+      <p>Your JOVA account information.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading">
+      <h2>Account Details</h2>
+      <span class="badge active">Authenticated Account</span>
+    </div>
+
+    <div class="profile-grid">
+      <div class="field">
+        <label>Full Name</label>
+        <input id="profile-name" readonly>
+      </div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input id="profile-email" readonly>
+      </div>
+
+      <div class="field">
+        <label>Phone Number</label>
+        <input id="profile-phone" readonly>
+      </div>
+
+      <div class="field">
+        <label>Account Type</label>
+        <input id="profile-role" readonly>
+      </div>
+
+      <div class="field">
+        <label>Company Name</label>
+        <input id="profile-company" readonly>
+      </div>
+
+      <div class="field">
+        <label>Account Created</label>
+        <input id="profile-created" readonly>
+      </div>
+    </div>
+
+    <p class="muted small">
+      Profile editing and password changes can be enabled
+      through authenticated backend endpoints.
+    </p>
+  </div>
+
+</section>
+
+<!-- SUPPORT -->
+
+<section class="section" id="section-support">
+
+  <div class="page-heading">
+    <div>
+      <h1>Help & Support</h1>
+      <p>Need assistance? Send a message to the JOVA support team.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--navy)">Contact JOVA Support</h2>
+
+    <p class="muted">
+      Complete the form below. Your message will be sent
+      through JOVA's secure support system once email delivery
+      has been configured.
+    </p>
+
+    <form id="support-form">
+
+      <div class="field">
+        <label for="support-subject">Subject</label>
+        <input id="support-subject" maxlength="150" required>
+      </div>
+
+      <div class="field">
+        <label for="support-message">How can we help?</label>
+        <textarea id="support-message" maxlength="5000" required></textarea>
+      </div>
+
+      <button class="button primary" type="submit">
+        Send Support Request
+      </button>
+
+      <p class="muted small" id="support-status"></p>
+
+    </form>
+  </div>
+
+</section>
+
+<footer>
+  JOVA Property Marketplace · Premium Property Discovery
+</footer>
+
+</main>
+</div>
+
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <button class="active" data-section="overview">
+    <span>⌂</span>Home
+  </button>
+
+  <button data-section="properties">
+    <span>▦</span>Properties
+  </button>
+
+  <button data-section="promotions">
+    <span>✦</span>Boosts
+  </button>
+
+  <button data-section="messages">
+    <span>✉</span>Messages
+  </button>
+
+  <button data-section="profile">
+    <span>◎</span>Profile
+  </button>
+</nav>
+
+<script>
+"use strict";
+
+const API =
+  "https://property-marketplace-api.dailygistroom.workers.dev";
+
+const $ = id => document.getElementById(id);
+
+const token = localStorage.getItem("jova_token");
+
+let currentUser = null;
+let properties = [];
+let notifications = [];
+let conversations = [];
+let selectedConversationId = null;
+let promotionPlans = [];
+let listingPlans = [];
+
+function escapeText(value) {
+  return String(value ?? "");
+}
+
+function showAlert(message, error = false) {
+  const alert = $("global-alert");
+
+  alert.textContent = message;
+  alert.classList.toggle("error", error);
+  alert.style.display = "block";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function hideAlert() {
+  $("global-alert").style.display = "none";
+}
+
+async function api(path, options = {}) {
+  const headers = {
+    "Authorization": "Bearer " + token,
+    ...(options.body instanceof FormData
+      ? {}
+      : options.body
+        ? { "Content-Type": "application/json" }
+        : {}),
+    ...options.headers
+  };
+
+  const response = await fetch(API + path, {
+    ...options,
+    headers
+  });
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("The server returned an invalid response.");
+  }
+
+  if (response.status === 401) {
+    localStorage.removeItem("jova_token");
+    localStorage.removeItem("jova_user");
+
+    location.replace("/login.html");
+
+    throw new Error("Please log in again.");
+  }
+
+  if (!response.ok || data.success === false) {
+    throw new Error(data.message || "The request failed.");
+  }
+
+  return data;
+}
+
+function node(tag, className, text) {
+  const el = document.createElement(tag);
+
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = text;
+
+  return el;
+}
+
+function emptyState(container, message) {
+  container.replaceChildren(
+    node("div", "empty", message)
+  );
+}
+
+function money(amount, currency = "NGN") {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) {
+    return "Price unavailable";
+  }
+
+  try {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: currency || "NGN",
+      maximumFractionDigits: 0
+    }).format(value);
+  } catch {
+    return "₦" + value.toLocaleString("en-NG");
+  }
+}
+
+function dateText(value) {
+  if (!value) return "Not specified";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not specified";
+  }
+
+  return date.toLocaleDateString();
+}
+
+function showSection(name) {
+  const section = $("section-" + name);
+
+  if (!section) return;
+
+  document.querySelectorAll(".section").forEach(el => {
+    el.classList.toggle("active", el === section);
+  });
+
+  document.querySelectorAll("[data-section]").forEach(el => {
+    el.classList.toggle(
+      "active",
+      el.dataset.section === name
+    );
+  });
+
+  hideAlert();
+
+  if (name === "properties") loadProperties();
+  if (name === "notifications") loadNotifications();
+  if (name === "messages") loadConversations();
+  if (name === "promotions") {
+    loadPromotionPlans();
+    loadMyPromotions();
+  }
+  if (name === "subscriptions") loadListingPlans();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll("[data-section]").forEach(button => {
+  button.addEventListener("click", () => {
+    showSection(button.dataset.section);
+  });
+});
+
+function safeImageUrl(property) {
+  const image = property.cover_image;
+
+  if (!image) return "";
+
+  if (/^https:\/\//i.test(image)) {
+    try {
+      const url = new URL(image);
+
+      if (url.protocol === "https:") return url.href;
+    } catch {}
+
+    return "";
+  }
+
+  if (/^properties\/\d+\/[a-zA-Z0-9._-]+$/.test(image)) {
+    return API + "/api/images?key=" +
+      encodeURIComponent(image);
+  }
+
+  return "";
+}
+
+async function loadAccount() {
+  const data = await api("/api/auth/me");
+
+  currentUser = data.user;
+
+  $("welcome-name").textContent =
+    currentUser.full_name || "there";
+
+  $("profile-name").value = currentUser.full_name || "";
+  $("profile-email").value = currentUser.email || "";
+  $("profile-phone").value = currentUser.phone || "";
+  $("profile-role").value = currentUser.role || "";
+  $("profile-company").value = currentUser.company_name || "";
+  $("profile-created").value =
+    dateText(currentUser.created_at);
+}
+
+async function loadProperties() {
+  const container = $("all-properties");
+
+  emptyState(container, "Loading your properties...");
+
+  try {
+    const data = await api("/api/my-properties");
+
+    properties = data.properties || [];
+
+    renderProperties(container, properties);
+
+    $("stat-total").textContent = properties.length;
+
+    $("stat-active").textContent =
+      properties.filter(p => p.status === "active").length;
+
+    $("stat-views").textContent =
+      properties.reduce(
+        (sum, p) => sum + Number(p.views || 0),
+        0
+      ).toLocaleString();
+
+    const recent = $("recent-properties");
+
+    renderProperties(recent, properties.slice(0, 3));
+
+  } catch (error) {
+    emptyState(
+      container,
+      "Unable to load your properties. " + error.message
+    );
+
+    emptyState(
+      $("recent-properties"),
+      "Your properties could not be loaded."
+    );
+  }
+}
+
+function renderProperties(container, items) {
+  container.replaceChildren();
+
+  if (!items.length) {
+    emptyState(
+      container,
+      "No properties found. Add your first property to get started."
+    );
+
+    return;
+  }
+
+  items.forEach(property => {
+    const card = node("article", "property");
+
+    const image = node("img", "property-image");
+
+    image.alt = property.title || "Property image";
+    image.loading = "lazy";
+
+    image.src = safeImageUrl(property) ||
+      "data:image/svg+xml," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250"><rect width="100%" height="100%" fill="#F8F5EE"/><text x="50%" y="50%" text-anchor="middle" fill="#0A1628" font-size="24">JOVA</text></svg>'
+      );
+
+    const body = node("div", "property-body");
+
+    body.append(
+      node("h3", "property-title", property.title || "Untitled property"),
+      node(
+        "p",
+        "muted small",
+        [property.city, property.state].filter(Boolean).join(", ")
+          || "Location not specified"
+      ),
+      node(
+        "div",
+        "property-price",
+        money(property.price, property.currency)
+      )
+    );
+
+    const badge = node(
+      "span",
+      "badge " + (
+        property.status === "active" ? "active" : ""
+      ),
+      property.status || "unknown"
+    );
+
+    body.appendChild(badge);
+
+    const actions = node("div", "button-row");
+
+    const view = node("a", "button", "View Property");
+
+    view.href = "/property-details.html?id=" +
+      encodeURIComponent(property.id);
+
+    const edit = node("a", "button", "Edit Listing");
+
+    edit.href = "/add-property.html?edit=" +
+      encodeURIComponent(property.id);
+
+    const remove = node("button", "button danger", "Delete");
+
+    remove.addEventListener("click", async () => {
+      if (!confirm(
+        "Permanently delete this property? This action cannot be undone."
+      )) {
+        return;
+      }
+
+      remove.disabled = true;
+      remove.textContent = "Deleting...";
+
+      try {
+        await api(
+          "/api/properties/" + encodeURIComponent(property.id),
+          { method: "DELETE" }
+        );
+
+        properties = properties.filter(
+          p => String(p.id) !== String(property.id)
+        );
+
+        renderProperties($("all-properties"), properties);
+        renderProperties(
+          $("recent-properties"),
+          properties.slice(0, 3)
+        );
+
+        $("stat-total").textContent = properties.length;
+
+        $("stat-active").textContent =
+          properties.filter(p => p.status === "active").length;
+
+        $("stat-views").textContent =
+          properties.reduce(
+            (sum, p) => sum + Number(p.views || 0),
+            0
+          ).toLocaleString();
+
+        showAlert("Property deleted successfully.");
+
+      } catch (error) {
+        showAlert(error.message, true);
+        remove.disabled = false;
+        remove.textContent = "Delete";
+      }
+    });
+
+    actions.append(view, edit, remove);
+
+    body.appendChild(actions);
+
+    card.append(image, body);
+
+    container.appendChild(card);
+  });
+}
+
+async function loadNotifications() {
+  try {
+    const data = await api("/api/notifications");
+
+    notifications = data.notifications || [];
+
+    const unread = notifications.filter(
+      n => Number(n.is_read) === 0
+    ).length;
+
+    $("stat-unread").textContent = unread;
+    $("top-unread").textContent = unread;
+
+    renderNotifications(
+      $("all-notifications"),
+      notifications
+    );
+
+    renderNotifications(
+      $("recent-notifications"),
+      notifications.slice(0, 3)
+    );
+
+  } catch (error) {
+    emptyState(
+      $("all-notifications"),
+      "Unable to load notifications. " + error.message
+    );
+
+    emptyState(
+      $("recent-notifications"),
+      "Notifications are temporarily unavailable."
+    );
+  }
+}
+
+function renderNotifications(container, items) {
+  container.replaceChildren();
+
+  if (!items.length) {
+    emptyState(container, "You have no notifications yet.");
+    return;
+  }
+
+  items.forEach(notification => {
+    const card = node(
+      "article",
+      "notification " +
+        (Number(notification.is_read) === 0 ? "unread" : "")
+    );
+
+    card.append(
+      node("h3", "", notification.title || "JOVA Notification"),
+      node("p", "", notification.message || ""),
+      node("small", "", dateText(notification.created_at))
+    );
+
+    const actions = node("div", "button-row");
+
+    if (Number(notification.is_read) === 0) {
+      const read = node("button", "button", "Mark as read");
+
+      read.addEventListener("click", async () => {
+        try {
+          await api("/api/notifications/read", {
+            method: "POST",
+            body: JSON.stringify({
+              notification_id: notification.id
+            })
+          });
+
+          await loadNotifications();
+
+        } catch (error) {
+          showAlert(
+            "Marking notifications as read needs a registered backend route. " +
+            error.message,
+            true
+          );
+        }
+      });
+
+      actions.appendChild(read);
+    }
+
+    if (notification.link) {
+      const open = node("a", "button", "Open");
+
+      open.href = notification.link;
+
+      actions.appendChild(open);
+    }
+
+    card.appendChild(actions);
+    container.appendChild(card);
+  });
+}
+
+async function loadConversations() {
+  const container = $("conversations");
+
+  emptyState(container, "Loading conversations...");
+
+  try {
+    const data = await api("/api/conversations");
+
+    conversations = data.conversations || [];
+
+    container.replaceChildren();
+
+    if (!conversations.length) {
+      emptyState(container, "You have no conversations yet.");
+      return;
+    }
+
+    conversations.forEach(conversation => {
+      const button = node(
+        "button",
+        "conversation" +
+          (Number(conversation.id) === selectedConversationId
+            ? " selected" : "")
+      );
+
+      button.append(
+        node(
+          "h3",
+          "",
+          conversation.other_user_name || "JOVA User"
+        ),
+        node(
+          "p",
+          "",
+          conversation.property_title || "Property enquiry"
+        ),
+        node(
+          "p",
+          "",
+          conversation.last_message || "Open conversation"
+        )
+      );
+
+      if (Number(conversation.unread_count || 0) > 0) {
+        button.appendChild(
+          node(
+            "span",
+            "badge gold",
+            conversation.unread_count + " unread"
+          )
+        );
+      }
+
+      button.addEventListener("click", () => {
+        openConversation(conversation);
+      });
+
+      container.appendChild(button);
+    });
+
+  } catch (error) {
+    emptyState(
+      container,
+      "Unable to load conversations. " + error.message
+    );
+  }
+}
+
+async function openConversation(conversation) {
+  selectedConversationId = Number(conversation.id);
+
+  $("message-window").hidden = false;
+
+  $("conversation-title").textContent =
+    conversation.other_user_name || "Conversation";
+
+  $("conversation-subtitle").textContent =
+    conversation.property_title || "JOVA Property Marketplace";
+
+  await loadMessages(selectedConversationId);
+}
+
+async function loadMessages(conversationId) {
+  const container = $("messages-list");
+
+  emptyState(container, "Loading messages...");
+
+  try {
+    const data = await api(
+      "/api/messages?conversation_id=" +
+      encodeURIComponent(conversationId)
+    );
+
+    container.replaceChildren();
+
+    if (!data.messages.length) {
+      container.appendChild(
+        node("div", "empty", "No messages in this conversation.")
+      );
+    }
+
+    data.messages.forEach(message => {
+      const mine =
+        Number(message.sender_id) === Number(currentUser.id);
+
+      const bubble = node(
+        "div",
+        "message-bubble" + (mine ? " mine" : ""),
+        message.message
+      );
+
+      bubble.appendChild(
+        node(
+          "small",
+          "",
+          (message.sender_name || "User") +
+            " · " + dateText(message.created_at)
+        )
+      );
+
+      container.appendChild(bubble);
+    });
+
+    container.scrollTop = container.scrollHeight;
+
+  } catch (error) {
+    emptyState(container, error.message);
+  }
+}
+
+$("send-message-form").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const input = $("message-input");
+  const message = input.value.trim();
+
+  if (!message || !selectedConversationId) return;
+
+  const submit = event.submitter;
+
+  if (submit) submit.disabled = true;
+
+  try {
+    await api("/api/messages", {
+      method: "POST",
+      body: JSON.stringify({
+        conversation_id: selectedConversationId,
+        message
+      })
+    });
+
+    input.value = "";
+
+    await loadMessages(selectedConversationId);
+    await loadConversations();
+
+  } catch (error) {
+    showAlert(error.message, true);
+
+  } finally {
+    if (submit) submit.disabled = false;
+  }
+});
+
+async function loadListingPlans() {
+  const container = $("listing-plans");
+
+  emptyState(container, "Loading listing plans...");
+
+  try {
+    const data = await api("/api/listing-plans");
+
+    listingPlans = data.plans || [];
+
+    container.replaceChildren();
+
+    if (!listingPlans.length) {
+      emptyState(container, "No active listing plans are available.");
+      return;
+    }
+
+    listingPlans.forEach(plan => {
+      const card = node("article", "promo-card");
+
+      card.append(
+        node("h3", "", plan.name),
+        node("p", "", plan.description || "JOVA listing plan"),
+        node("div", "price", money(plan.price)),
+        node(
+          "p",
+          "",
+          (plan.max_active_listings ?? "Plan-based") +
+            " maximum active listings"
+        ),
+        node(
+          "p",
+          "",
+          (plan.duration_days ?? "—") + " day(s)"
+        )
+      );
+
+      const button = node("button", "button gold", "Choose Plan");
+
+      button.addEventListener("click", () => {
+        showAlert(
+          "Plan selection is available, but subscription activation must be connected to the payment workflow."
+        );
+      });
+
+      card.appendChild(button);
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    emptyState(
+      container,
+      "Unable to load plans. " + error.message
+    );
+  }
+}
+
+async function loadPromotionPlans() {
+  const container = $("promotion-plans");
+
+  emptyState(container, "Loading promotion packages...");
+
+  try {
+    const data = await api("/api/promotion-plans");
+
+    promotionPlans = data.plans || [];
+
+    container.replaceChildren();
+
+    if (!promotionPlans.length) {
+      emptyState(
+        container,
+        "No active promotion packages are currently available."
+      );
+      return;
+    }
+
+    promotionPlans.forEach(plan => {
+      const card = node("article", "promo-card");
+
+      card.append(
+        node("h3", "", plan.name),
+        node("p", "", plan.description || "Promote your property on JOVA."),
+        node("div", "price", money(plan.price)),
+        node(
+          "p",
+          "",
+          (plan.duration_days ?? "—") + " days of promotion"
+        )
+      );
+
+      const select = node("select", "");
+
+      select.setAttribute("aria-label", "Select your property");
+
+      select.appendChild(
+        new Option("Choose your property", "")
+      );
+
+      properties.forEach(property => {
+        select.appendChild(
+          new Option(
+            property.title || "Property",
+            property.id
+          )
+        );
+      });
+
+      const button = node("button", "button gold", "Boost This Property");
+
+      button.addEventListener("click", async () => {
+        if (!select.value) {
+          showAlert("Please select a property first.", true);
+          return;
+        }
+
+        button.disabled = true;
+
+        try {
+          const data = await api("/api/payments/initialize", {
+            method: "POST",
+            body: JSON.stringify({
+              property_id: Number(select.value),
+              promotion_plan_id: Number(plan.id),
+              callback_url:
+                location.origin + "/payment-callback.html"
+            })
+          });
+
+          if (!data.authorization_url) {
+            throw new Error("Payment link was not returned.");
+          }
+
+          location.href = data.authorization_url;
+
+        } catch (error) {
+          showAlert(error.message, true);
+          button.disabled = false;
+        }
+      });
+
+      card.append(select, button);
+
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    emptyState(
+      container,
+      "Promotion packages could not be loaded. " +
+      "The Worker needs a GET /api/promotion-plans endpoint."
+    );
+  }
+}
+
+async function loadMyPromotions() {
+  emptyState(
+    $("my-promotions"),
+    "Your active boosts and expiry dates will appear here once the authenticated promotion-history endpoint is implemented."
+  );
+}
+
+$("support-form").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  $("support-status").textContent =
+    "Support email delivery has not yet been connected to the backend.";
+
+  showAlert(
+    "Your support form is ready, but it cannot send email until the private support endpoint and email delivery service are configured.",
+    true
+  );
+});
+
+$("logout-button").addEventListener("click", async () => {
+  if (!confirm("Are you sure you want to log out?")) return;
+
+  try {
+    await api("/api/auth/logout", {
+      method: "POST"
+    });
+  } catch {
+    // Clear the local session even if the network is unavailable.
+  }
+
+  localStorage.removeItem("jova_token");
+  localStorage.removeItem("jova_user");
+
+  location.replace("/login.html");
+});
+
+async function initializeDashboard() {
+  if (!token) {
+    location.replace("/login.html");
+    return;
+  }
+
+  try {
+    await loadAccount();
+
+    await Promise.allSettled([
+      loadProperties(),
+      loadNotifications()
+    ]);
+
+    // Load secondary sections on demand.
+
+  } catch (error) {
+    showAlert(
+      "We could not initialize your dashboard. " + error.message,
+      true
+    );
+  }
+}
+
+initializeDashboard();
+</script>
+
+</body>
+</html>
