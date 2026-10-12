@@ -3121,7 +3121,12 @@ if (
   ) {
     return handlePlans(env);
   }
-
+  if (
+    path === "/api/promotion-plans" &&
+    method === "GET"
+  ) {
+    return handlePromotionPlans(env);
+  }
   if (
     path === "/api/properties" &&
     method === "GET"
