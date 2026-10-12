@@ -1046,7 +1046,11 @@ async function handleGetProperty(request, env, propertyId) {
     .bind(propertyId)
     .all();
 
-  property.images = images.results || [];
+  const imageOrigin = new URL(request.url).origin;
+property.images = (images.results || []).map(image => ({
+  ...image,
+  image_url: `${imageOrigin}/api/images?key=${encodeURIComponent(image.image_key)}`
+}));
 
   return json({
     success: true,
