@@ -217,10 +217,23 @@ function formatPrice(value) {
 
 function safeImageUrl(image) {
   if (!image) return "";
+
+  const key = image.image_key || "";
   const value = image.image_url || "";
+
+  // Prefer the image key from JOVA's database.
+  if (key && /^properties\/\d+\/[a-zA-Z0-9._-]+$/.test(key)) {
+    return API + "/api/images?key=" + encodeURIComponent(key);
+  }
+
+  // Otherwise, use a valid image URL from the API.
   try {
     const parsed = new URL(value, API);
-    if (parsed.origin !== new URL(API).origin) return "";
+
+    if (parsed.origin !== new URL(API).origin) {
+      return "";
+    }
+
     return parsed.href;
   } catch {
     return "";
