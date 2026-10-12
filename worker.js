@@ -1187,6 +1187,28 @@ async function handleCreateProperty(request, env) {
     );
   }
 
+    const subscription = await env.DB.prepare(`
+    SELECT
+      us.listing_plan_id,
+      us.expires_at,
+      us.status,
+      lp.name AS plan_name,
+      lp.max_active_listings
+    FROM user_subscriptions us
+    JOIN listing_plans lp
+      ON lp.id = us.listing_plan_id
+    WHERE us.user_id = ?
+      AND us.status = 'active'
+      AND us.expires_at > ?
+    LIMIT 1
+  `)
+    .bind(user.id, now())
+    .first();
+
+  const maxListings = subscription
+    ? subscription.max_active_listings
+    : 3;
+
   const activeCount = await env.DB.prepare(`
     SELECT COUNT(*) AS count
     FROM properties
@@ -1198,12 +1220,16 @@ async function handleCreateProperty(request, env) {
 
   const count = Number(activeCount?.count || 0);
 
-  if (count >= 3) {
+  if (
+    maxListings !== null &&
+    count >= Number(maxListings)
+  ) {
     return json(
       {
         success: false,
-        message:
-          "You have reached the free listing limit. Please choose a paid listing plan.",
+        message: subscription
+          ? `You have reached your ${subscription.plan_name} plan limit of ${maxListings} active listings.`
+          : "You have reached the free listing limit of 3 active properties. Please subscribe to a paid plan.",
         code: "LISTING_LIMIT_REACHED",
       },
       403
