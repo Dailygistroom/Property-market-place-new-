@@ -983,7 +983,10 @@ async function handleGetProperties(request, env) {
       .bind(property.id)
       .all();
 
-    property.images = images.results || [];
+    property.images = (images.results || []).map(image => ({
+  ...image,
+  image_url: `${url.origin}/api/images?key=${encodeURIComponent(image.image_key)}`
+}));
   }
 
   return json({
