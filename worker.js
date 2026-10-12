@@ -3041,11 +3041,19 @@ if (
     return handleLogout(request, env);
   }
 
-  if (
-    path === "/api/auth/me" &&
+  
+      if (
+    path === "/api/notifications" &&
     method === "GET"
   ) {
-    return handleMe(request, env);
+    return handleGetNotifications(request, env);
+  }
+
+  if (
+    path === "/api/notifications/read" &&
+    method === "POST"
+  ) {
+    return handleMarkNotificationRead(request, env);
   }
   if (
     path === "/api/conversations" &&
