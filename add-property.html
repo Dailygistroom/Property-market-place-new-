@@ -738,57 +738,54 @@ async function uploadImages(propertyId, token){
   }
 }
 
-form.addEventListener("submit", async function(e){
-
+form.addEventListener("submit", async function(e) {
   e.preventDefault();
+
+  showMessage("Checking your property details...", "success");
+
+  if (!form.reportValidity()) {
+    message.className = "message error";
+    message.textContent = "Please complete all required fields.";
+    return;
+  }
 
   const token = getToken();
 
-  if(!token){
-    showMessage(
-      "Please log in before adding a property.",
-      "error"
-    );
-
-    setTimeout(()=>{
-      window.location.href = "login.html";
-    },1200);
-
+  if (!token) {
+    showMessage("Your session has expired. Please log in again.", "error");
     return;
   }
 
   publishBtn.disabled = true;
   publishBtn.textContent = "Publishing...";
 
-  try{
+  try {
+    showMessage("Creating your property listing...", "success");
 
     const propertyId = await createProperty(token);
 
-    if(!propertyId){
-      throw new Error(
-        "Property was created but no property ID was returned."
-      );
+    if (!propertyId) {
+      throw new Error("The server did not return a property ID.");
     }
+
+    showMessage("Property created. Uploading photos...", "success");
 
     await uploadImages(propertyId, token);
 
-    showMessage(
-      "Property published successfully!",
-      "success"
-    );
+    showMessage("Property published successfully!", "success");
 
-    setTimeout(()=>{
+    publishBtn.textContent = "Published!";
+
+    setTimeout(function() {
       window.location.href =
-        "property-details.html?id=" +
-        encodeURIComponent(propertyId);
-    },1200);
+        "property-details.html?id=" + encodeURIComponent(propertyId);
+    }, 1500);
 
-  }catch(error){
-
-    console.error(error);
+  } catch (error) {
+    console.error("JOVA publishing error:", error);
 
     showMessage(
-      error.message || "Something went wrong. Please try again.",
+      error.message || "Publishing failed. Please try again.",
       "error"
     );
 
