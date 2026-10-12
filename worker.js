@@ -3102,12 +3102,9 @@ if (
     return handleSendMessage(request, env);
   }
 
-  if (
-    path === "/api/notifications" &&
-    method === "GET"
-  ) {
-    return handleGetNotifications(request, env);
-  }
+  
+    
+  
   if (
     path === "/api/listing-plans" &&
     method === "GET"
