@@ -846,6 +846,25 @@ async function handlePlans(env) {
   });
 }
 
+async function handlePromotionPlans(env) {
+  const result = await env.DB.prepare(`
+    SELECT
+      id,
+      name,
+      description,
+      price,
+      duration_days,
+      is_active
+    FROM promotion_plans
+    WHERE is_active = 1
+    ORDER BY price ASC, id ASC
+  `).all();
+
+  return json({
+    success: true,
+    plans: result.results || [],
+  });
+}
 function buildPropertyFilters(url) {
   const conditions = [
     `p.status = 'active'`,
