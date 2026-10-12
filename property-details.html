@@ -307,16 +307,39 @@ async function loadProperty() {
       property.advertiser_name || "Property Advertiser";
 
     const phone = String(property.advertiser_phone || "").replace(/\D/g, "");
-    const whatsapp = document.getElementById("whatsappButton");
+const whatsapp = document.getElementById("whatsappButton");
+const callButton = document.getElementById("callButton");
+const phoneLabel = document.getElementById("advertiserPhone");
 
-    if (phone) {
-      const internationalPhone = phone.startsWith("0")
-        ? "234" + phone.slice(1)
-        : phone;
+if (phone) {
+  const internationalPhone = phone.startsWith("0")
+    ? "234" + phone.slice(1)
+    : phone;
 
-      whatsapp.href = "https://wa.me/" + internationalPhone;
-      whatsapp.hidden = false;
-    }
+  if (phoneLabel) {
+    phoneLabel.textContent = property.advertiser_phone || "";
+  }
+
+  if (callButton) {
+    callButton.href = "tel:+" + internationalPhone;
+    callButton.hidden = false;
+  }
+
+  if (whatsapp) {
+    const propertyUrl = window.location.href.split("#")[0];
+
+    const message =
+      "Hello, I'm interested in this property on JOVA.\n\n" +
+      "Property: " + (property.title || "Property listing") +
+      "\nView property: " + propertyUrl;
+
+    whatsapp.href =
+      "https://wa.me/" + internationalPhone +
+      "?text=" + encodeURIComponent(message);
+
+    whatsapp.hidden = false;
+  }
+}
 
     gallery.innerHTML = "";
     const images = Array.isArray(property.images) ? property.images : [];
