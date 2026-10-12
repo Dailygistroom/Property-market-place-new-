@@ -2360,68 +2360,72 @@ async function completePayment(
   }
 
   if (
-    payment.payment_type === "promotion" &&
-    payment.promotion_plan_id &&
-    payment.property_id
+  payment.payment_type === "promotion" &&
+  payment.promotion_plan_id &&
+  payment.property_id
+) {
+  const plan = await env.DB.prepare(`
+    SELECT id, name, price, duration_days
+    FROM promotion_plans
+    WHERE id = ?
+      AND is_active = 1
+    LIMIT 1
+  `)
+    .bind(payment.promotion_plan_id)
+    .first();
+
+  const property = await env.DB.prepare(`
+    SELECT id, user_id
+    FROM properties
+    WHERE id = ?
+    LIMIT 1
+  `)
+    .bind(payment.property_id)
+    .first();
+
+  if (
+    plan &&
+    property &&
+    Number(property.user_id) === Number(payment.user_id)
   ) {
-    const plan = await env.DB.prepare(`
-      SELECT *
-      FROM promotion_plans
-      WHERE id = ?
-      LIMIT 1
+    const startsAt = new Date();
+
+    const expiresAt = new Date(
+      startsAt.getTime() +
+        Number(plan.duration_days) * 24 * 60 * 60 * 1000
+    );
+
+    await env.DB.prepare(`
+      INSERT INTO property_promotions (
+        property_id,
+        promotion_plan_id,
+        starts_at,
+        expires_at
+      )
+      VALUES (?, ?, ?, ?)
     `)
-      .bind(payment.promotion_plan_id)
-      .first();
+      .bind(
+        property.id,
+        plan.id,
+        startsAt.toISOString(),
+        expiresAt.toISOString()
+      )
+      .run();
 
-    const property = await env.DB.prepare(`
-      SELECT id, user_id
-      FROM properties
+    await env.DB.prepare(`
+      UPDATE properties
+      SET
+        is_featured = 1,
+        updated_at = ?
       WHERE id = ?
-      LIMIT 1
+        AND user_id = ?
     `)
-      .bind(payment.property_id)
-      .first();
-
-    if (plan && property) {
-      const startsAt = new Date();
-      const expiresAt = new Date();
-
-      expiresAt.setDate(
-        expiresAt.getDate() +
-          Number(plan.duration_days)
-      );
-
-      await env.DB.prepare(`
-        INSERT INTO property_promotions (
-          property_id,
-          promotion_plan_id,
-          starts_at,
-          expires_at,
-          status
-        )
-        VALUES (?, ?, ?, ?, 'active')
-      `)
-        .bind(
-          property.id,
-          plan.id,
-          startsAt.toISOString(),
-          expiresAt.toISOString()
-        )
-        .run();
-
-      await env.DB.prepare(`
-        UPDATE properties
-        SET
-          is_featured = 1,
-          updated_at = ?
-        WHERE id = ?
-      `)
-        .bind(
-          now(),
-          property.id
-        )
-        .run();
-    }
+      .bind(
+        now(),
+        property.id,
+        payment.user_id
+      )
+      .run();
   }
 }
 
