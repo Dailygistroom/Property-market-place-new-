@@ -3059,7 +3059,12 @@ if (
   ) {
     return handleLogout(request, env);
   }
-
+if (
+  path === "/api/auth/me" &&
+  method === "GET"
+) {
+  return handleMe(request, env);
+}
   
       if (
     path === "/api/notifications" &&
