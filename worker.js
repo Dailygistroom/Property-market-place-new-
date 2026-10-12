@@ -2428,7 +2428,7 @@ async function completePayment(
       .run();
   }
 }
-
+}
 async function handlePaystackWebhook(
   request,
   env
