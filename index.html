@@ -2225,7 +2225,125 @@ document
       submitButton.textContent = "Submit Property Listing";
     }
   });
+/* LOAD LIVE JOVA PROPERTIES */
 
+async function loadMarketplaceProperties() {
+  const container = document.getElementById("propertyListings");
+  const noResults = document.getElementById("noResults");
+
+  if (!container) return;
+
+  container.innerHTML = "<p>Loading properties...</p>";
+
+  try {
+    const response = await fetch(
+      "https://property-marketplace-api.dailygistroom.workers.dev/api/properties?limit=50"
+    );
+
+    if (!response.ok) {
+      throw new Error("Unable to load properties.");
+    }
+
+    const data = await response.json();
+    const properties = data.properties || [];
+
+    container.innerHTML = "";
+
+    if (!properties.length) {
+      if (noResults) noResults.style.display = "block";
+      return;
+    }
+
+    if (noResults) noResults.style.display = "none";
+
+    properties.forEach(function(property) {
+      const card = document.createElement("article");
+      card.className = "property-card";
+
+      const imageUrl =
+        property.images &&
+        property.images.length &&
+        property.images[0].image_url
+          ? property.images[0].image_url
+          : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80";
+
+      const price = Number(property.price || 0);
+      let shortPrice;
+
+      if (price >= 1000000000) {
+        shortPrice = "₦" + (price / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
+      } else if (price >= 1000000) {
+        shortPrice = "₦" + (price / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+      } else if (price >= 1000) {
+        shortPrice = "₦" + (price / 1000).toFixed(0) + "K";
+      } else {
+        shortPrice = "₦" + price.toLocaleString("en-NG");
+      }
+
+      const purpose = String(property.listing_type || "").toLowerCase();
+      const type = String(property.property_type || "").toLowerCase();
+      const location = [property.city, property.state]
+        .filter(Boolean)
+        .join(", ");
+
+      card.dataset.purpose = purpose;
+      card.dataset.type = type;
+      card.dataset.location = location.toLowerCase();
+      card.dataset.price = price;
+
+      const imageWrap = document.createElement("div");
+      imageWrap.className = "property-image";
+
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.alt = property.title || "Property listing";
+      img.loading = "lazy";
+
+      imageWrap.appendChild(img);
+
+      const tag = document.createElement("span");
+      tag.className = "property-tag";
+      tag.textContent = purpose.toUpperCase() || "PROPERTY";
+      imageWrap.appendChild(tag);
+
+      const body = document.createElement("div");
+      body.className = "property-body";
+
+      const title = document.createElement("h3");
+      title.textContent = property.title || "Property listing";
+
+      const place = document.createElement("p");
+      place.className = "location";
+      place.textContent = location || "Location available on request";
+
+      const priceEl = document.createElement("div");
+      priceEl.className = "property-price";
+      priceEl.textContent = shortPrice;
+
+      const stats = document.createElement("div");
+      stats.className = "property-stats";
+      stats.textContent =
+        (property.bedrooms || 0) + " bedrooms · " +
+        (property.bathrooms || 0) + " bathrooms";
+
+      const link = document.createElement("a");
+      link.className = "view-property";
+      link.href = "property-details.html?id=" + encodeURIComponent(property.id);
+      link.textContent = "View Property";
+
+      body.append(title, place, priceEl, stats, link);
+      card.append(imageWrap, body);
+      container.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error("JOVA marketplace loading error:", error);
+    container.innerHTML =
+      "<p>We couldn't load properties right now. Please refresh and try again.</p>";
+  }
+}
+
+loadMarketplaceProperties();
 </script>
 <script src="/locations.js"></script>
 </body>
