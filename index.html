@@ -1580,7 +1580,25 @@
 
 
 <script>
+/* LOGIN / DASHBOARD NAVIGATION */
 
+(function () {
+  const accountLink = document.getElementById("accountNavLink");
+
+  if (!accountLink) return;
+
+  const token =
+    localStorage.getItem("token") ||
+    localStorage.getItem("auth_token") ||
+    localStorage.getItem("session_token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("jova_token");
+
+  if (token) {
+    accountLink.href = "/dashboard.html";
+    accountLink.textContent = "Dashboard";
+  }
+})();
 /* MOBILE MENU */
 
 function toggleMenu() {
