@@ -2410,10 +2410,11 @@ async function completePayment(
         }
     }
 }
-  payment.payment_type === "promotion" &&
-  payment.promotion_plan_id &&
-  payment.property_id
-) {
+    if (
+    payment.payment_type === "promotion" &&
+    payment.promotion_plan_id &&
+    payment.property_id
+  ) {
   const plan = await env.DB.prepare(`
     SELECT id, name, price, duration_days
     FROM promotion_plans
