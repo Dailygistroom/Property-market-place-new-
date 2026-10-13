@@ -2337,55 +2337,79 @@ async function completePayment(
   if (
     payment.payment_type === "listing" &&
     payment.listing_plan_id
-  ) {
+) {
     const plan = await env.DB.prepare(`
-      SELECT *
-      FROM listing_plans
-      WHERE id = ?
-      LIMIT 1
+        SELECT *
+        FROM listing_plans
+        WHERE id = ?
+          AND is_active = 1
+        LIMIT 1
     `)
-      .bind(payment.listing_plan_id)
-      .first();
+        .bind(payment.listing_plan_id)
+        .first();
 
     if (plan) {
-      const expires = new Date();
+        const startsAt = new Date();
+        const expiresAt = new Date(
+            startsAt.getTime() +
+            Number(plan.duration_days) * 24 * 60 * 60 * 1000
+        );
 
-      expires.setDate(
-        expires.getDate() +
-          Number(plan.duration_days)
-      );
+        const boostCredits = Number(
+            plan.boost_credits || 0
+        );
 
-      if (payment.property_id) {
         await env.DB.prepare(`
-          UPDATE properties
-          SET
-            plan_type = ?,
-            listing_expires_at = ?,
-            is_featured = CASE
-              WHEN ? = 'featured'
-                OR ? = 'premium'
-              THEN 1
-              ELSE is_featured
-            END,
-            updated_at = ?
-          WHERE id = ?
-            AND user_id = ?
+            INSERT INTO user_subscriptions (
+                user_id,
+                listing_plan_id,
+                starts_at,
+                expires_at,
+                boost_credits_total,
+                boost_credits_used,
+                status,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, 0, 'active', ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                listing_plan_id = excluded.listing_plan_id,
+                starts_at = excluded.starts_at,
+                expires_at = excluded.expires_at,
+                boost_credits_total = excluded.boost_credits_total,
+                boost_credits_used = 0,
+                status = 'active',
+                updated_at = excluded.updated_at
         `)
-          .bind(
-            String(plan.name).toLowerCase(),
-            expires.toISOString(),
-            String(plan.name).toLowerCase(),
-            String(plan.name).toLowerCase(),
-            now(),
-            payment.property_id,
-            payment.user_id
-          )
-          .run();
-      }
-    }
-  }
+            .bind(
+                payment.user_id,
+                plan.id,
+                startsAt.toISOString(),
+                expiresAt.toISOString(),
+                boostCredits,
+                now()
+            )
+            .run();
 
-  if (
+        if (payment.property_id) {
+            await env.DB.prepare(`
+                UPDATE properties
+                SET
+                    plan_type = 'standard',
+                    listing_expires_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                  AND user_id = ?
+            `)
+                .bind(
+                    expiresAt.toISOString(),
+                    now(),
+                    payment.property_id,
+                    payment.user_id
+                )
+                .run();
+        }
+    }
+}
   payment.payment_type === "promotion" &&
   payment.promotion_plan_id &&
   payment.property_id
