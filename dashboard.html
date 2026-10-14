@@ -776,7 +776,7 @@ footer {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--navy);
+    background: #FFFFFF;
     border-top: 1px solid rgba(217,182,111,.45);
     padding: 7px 2px calc(7px + env(safe-area-inset-bottom));
     justify-content: space-around;
@@ -785,7 +785,7 @@ footer {
   .mobile-nav button {
     border: 0;
     background: transparent;
-    color: #E1E6EE;
+    color: #0A1628;
     padding: 6px 3px;
     min-width: 0;
     flex: 1;
@@ -799,7 +799,7 @@ footer {
   }
 
   .mobile-nav button.active {
-    color: var(--gold);
+    color: #B89449;
   }
 
   .stats {
@@ -830,9 +830,7 @@ footer {
   </a>
 
   <div class="top-actions">
-    <button class="icon-button" onclick="showSection('notifications')">
-      🔔 <span class="count" id="top-unread">0</span>
-    </button>
+    <button class="icon-button" style="color:#FFFFFF;" onclick="showSection('notifications')">🔔 <span class="count" id="top-unread">0</span></button>
 
     <button class="icon-button" id="logout-button">
       Log out
