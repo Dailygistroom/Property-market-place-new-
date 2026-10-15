@@ -726,7 +726,150 @@ footer {
   .sidebar {
     display: none;
   }
+/* JOVA COMPACT PREMIUM DASHBOARD */
+.subscription-summary {
+  background: linear-gradient(135deg, #0A1628, #1B355A);
+  color: #fff;
+  border: 1px solid rgba(217,182,111,.45);
+  border-radius: 20px;
+  padding: 22px;
+  margin: 0 0 18px;
+  box-shadow: 0 5px 18px rgba(10,22,40,.08);
+}
 
+.subscription-summary-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.subscription-summary-label {
+  color: #D9B66F;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.subscription-plan-name {
+  font-size: 25px;
+  font-weight: 800;
+  text-transform: capitalize;
+  margin-top: 7px;
+}
+
+.subscription-summary .badge {
+  white-space: nowrap;
+}
+
+.subscription-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.subscription-metric {
+  background: rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  padding: 13px;
+}
+
+.subscription-metric span {
+  display: block;
+  color: #D5DCE7;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+
+.subscription-metric strong {
+  color: #fff;
+  font-size: 23px;
+}
+
+.subscription-summary .button {
+  width: 100%;
+}
+
+@media(max-width:720px) {
+  main {
+    padding: 16px 12px 95px;
+  }
+
+  .page-heading {
+    margin-bottom: 15px;
+  }
+
+  .page-heading h1 {
+    font-size: 23px;
+    margin-bottom: 5px;
+  }
+
+  .page-heading p {
+    font-size: 12px;
+  }
+
+  .stats {
+    gap: 9px;
+    margin-bottom: 16px;
+  }
+
+  .stat {
+    padding: 13px;
+    border-radius: 14px;
+  }
+
+  .stat strong {
+    font-size: 23px;
+    margin-top: 10px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .promo-hero {
+    padding: 20px 16px;
+    border-radius: 18px;
+    margin-bottom: 17px;
+  }
+
+  .promo-hero h2 {
+    font-size: 25px;
+    margin: 10px 0;
+  }
+
+  .promo-hero p {
+    font-size: 12px;
+    line-height: 1.6;
+    margin: 8px 0 15px;
+  }
+
+  .card {
+    padding: 13px;
+    margin-bottom: 15px;
+    border-radius: 14px;
+  }
+
+  .card-heading {
+    margin-bottom: 13px;
+  }
+
+  .card-heading h2 {
+    font-size: 15px;
+  }
+
+  .subscription-summary {
+    padding: 17px;
+    margin-bottom: 15px;
+  }
+
+  .subscription-plan-name {
+    font-size: 22px;
+  }
+}
   main {
     padding: 19px 13px 100px;
   }
