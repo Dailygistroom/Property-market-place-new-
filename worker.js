@@ -834,6 +834,7 @@ async function handlePlans(env) {
       price,
       duration_days,
       max_active_listings,
+      boost_credits,
       is_active
     FROM listing_plans
     WHERE is_active = 1
