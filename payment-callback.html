@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Verifying Payment | JOVA</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #14213d;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      padding: 32px 24px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(20, 33, 61, 0.08);
+      text-align: center;
+    }
+
+    .brand {
+      margin-bottom: 24px;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .brand span {
+      color: #c5a15b;
+    }
+
+    h1 {
+      font-size: 23px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .status {
+      margin: 24px 0;
+      padding: 16px;
+      border-radius: 10px;
+      background: #f1f5f9;
+    }
+
+    .status.success {
+      background: #ecfdf5;
+      color: #166534;
+    }
+
+    .status.error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 13px 20px;
+      border-radius: 8px;
+      background: #14213d;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .button:hover {
+      opacity: 0.9;
+    }
+
+    .small {
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">JOVA<span>.</span></div>
+    <h1 id="heading">Verifying your payment</h1>
+    <p id="message">Please wait while JOVA checks your payment with Paystack.</p>
+    <div id="status" class="status" role="status" aria-live="polite">
+      Please do not close this page yet.
+    </div>
+    <a class="button" id="dashboard-link" href="/dashboard.html" hidden>
+      Return to Dashboard
+    </a>
+    <p class="small">If you believe there is a problem, contact JOVA support.</p>
+  </main>
+
+  <script>
+    const API_BASE = "https://property-marketplace-api.dailygistroom.workers.dev";
+
+    const heading = document.getElementById("heading");
+    const message = document.getElementById("message");
+    const statusBox = document.getElementById("status");
+    const dashboardLink = document.getElementById("dashboard-link");
+
+    function showResult(type, title, description) {
+      heading.textContent = title;
+      message.textContent = description;
+      statusBox.textContent = description;
+      statusBox.className = "status " + type;
+      dashboardLink.hidden = false;
+    }
+
+    async function verifyPayment() {
+      const token = localStorage.getItem("jova_token");
+
+      if (!token) {
+        showResult(
+          "error",
+          "Please sign in again",
+          "JOVA could not find your login session. Sign in and check your subscription before attempting another payment."
+        );
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const reference = params.get("reference") || params.get("trxref");
+
+      if (!reference) {
+        showResult(
+          "error",
+          "Payment reference missing",
+          "We could not find a Paystack payment reference in this URL. Please open your dashboard and check your subscription status."
+        );
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          API_BASE + "/api/payments/verify?reference=" + encodeURIComponent(reference),
+          {
+            method: "GET",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Accept": "application/json"
+            }
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success !== true) {
+          throw new Error(data.error || data.message || "JOVA could not confirm the payment.");
+        }
+
+        showResult(
+          "success",
+          "Payment verified",
+          "Your payment has been verified. Open your dashboard to check your subscription and listing limits."
+        );
+      } catch (error) {
+        showResult(
+          "error",
+          "Verification needs attention",
+          error.message || "We could not verify this payment. Please check your dashboard before trying again."
+        );
+      }
+    }
+
+    verifyPayment();
+  </script>
+</body>
+</html>
