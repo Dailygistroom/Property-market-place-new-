@@ -429,7 +429,55 @@ main {
   width: 100%;
   margin-top: 10px;
 }
+/* JOVA SUBSCRIPTION PLANS */
+#listing-plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
 
+#listing-plans .promo-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(10, 22, 40, 0.04);
+}
+
+#listing-plans .promo-card::before {
+  height: 3px;
+}
+
+#listing-plans .promo-card h3 {
+  font-size: 18px;
+  margin: 8px 0;
+  text-transform: capitalize;
+}
+
+#listing-plans .promo-card p {
+  margin: 7px 0;
+  line-height: 1.5;
+}
+
+#listing-plans .promo-card .price {
+  font-size: 25px;
+  margin: 12px 0;
+}
+
+#listing-plans .promo-card .button {
+  margin-top: 14px;
+  min-height: 43px;
+}
+
+@media (max-width: 720px) {
+  #listing-plans {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  #listing-plans .promo-card {
+    padding: 17px;
+  }
+}
 .property-list,
 .notification-list,
 .conversation-list,
