@@ -906,7 +906,30 @@ footer {
       + Add Property
     </a>
   </div>
+<div class="subscription-summary">
+  <div class="subscription-summary-top">
+    <div>
+      <div class="subscription-summary-label">YOUR CURRENT PLAN</div>
+      <div class="subscription-plan-name" id="dashboard-plan-name">Loading plan...</div>
+    </div>
+    <span class="badge gold" id="dashboard-plan-status">Checking</span>
+  </div>
 
+  <div class="subscription-metrics">
+    <div class="subscription-metric">
+      <span>Active Listings</span>
+      <strong id="dashboard-listings-usage">—</strong>
+    </div>
+    <div class="subscription-metric">
+      <span>Boost Credits</span>
+      <strong id="dashboard-boost-credits">—</strong>
+    </div>
+  </div>
+
+  <button class="button gold" onclick="showSection('subscriptions')">
+    Upgrade Plan →
+  </button>
+</div>
   <div class="stats">
     <div class="stat">
       <div class="stat-top">
