@@ -2298,8 +2298,6 @@ async function handleVerifyPayment(
 }
 
 async function completePayment(env, payment, transaction) {
-  // Confirm that the payment belongs to a real pending or
-  // already-completed record before changing subscription data.
   const current = await env.DB.prepare(`
     SELECT *
     FROM payments
@@ -2308,16 +2306,19 @@ async function completePayment(env, payment, transaction) {
   `)
     .bind(payment.id)
     .first();
+
   if (!current) {
     throw new Error("Payment record not found.");
   }
+
   if (current.status === "successful") {
     return;
   }
+
   if (current.status !== "pending") {
     throw new Error("Payment is not pending.");
   }
-  // Verify the transaction details before applying benefits.
+
   if (
     !transaction ||
     transaction.status !== "success" ||
@@ -2328,6 +2329,20 @@ async function completePayment(env, payment, transaction) {
   ) {
     throw new Error("Payment verification failed.");
   }
+
+  const statements = [];
+
+  // Atomically claim this pending payment.
+  // All subsequent changes are restricted to this claim.
+  statements.push(
+    env.DB.prepare(`
+      UPDATE payments
+      SET status = 'processing'
+      WHERE id = ?
+        AND status = 'pending'
+    `).bind(current.id)
+  );
+
   if (
     current.payment_type === "listing" &&
     current.listing_plan_id
@@ -2341,61 +2356,82 @@ async function completePayment(env, payment, transaction) {
     `)
       .bind(current.listing_plan_id)
       .first();
+
     if (!plan) {
-      throw new Error("The purchased listing plan is unavailable.");
+      throw new Error(
+        "The purchased listing plan is unavailable."
+      );
     }
+
     const startsAt = new Date();
+
     const expiresAt = new Date(
       startsAt.getTime() +
         Number(plan.duration_days) * 24 * 60 * 60 * 1000
     );
-    await env.DB.prepare(`
-      INSERT INTO user_subscriptions (
-        user_id,
-        listing_plan_id,
-        starts_at,
-        expires_at,
-        boost_credits_total,
-        boost_credits_used,
-        status,
-        updated_at
-      )
-      VALUES (?, ?, ?, ?, ?, 0, 'active', ?)
-      ON CONFLICT(user_id) DO UPDATE SET
-        listing_plan_id = excluded.listing_plan_id,
-        starts_at = excluded.starts_at,
-        expires_at = excluded.expires_at,
-        boost_credits_total = excluded.boost_credits_total,
-        boost_credits_used = 0,
-        status = 'active',
-        updated_at = excluded.updated_at
-    `)
-      .bind(
+
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO user_subscriptions (
+          user_id,
+          listing_plan_id,
+          starts_at,
+          expires_at,
+          boost_credits_total,
+          boost_credits_used,
+          status,
+          updated_at
+        )
+        SELECT ?, ?, ?, ?, ?, 0, 'active', ?
+        WHERE EXISTS (
+          SELECT 1
+          FROM payments
+          WHERE id = ?
+            AND status = 'processing'
+        )
+        ON CONFLICT(user_id) DO UPDATE SET
+          listing_plan_id = excluded.listing_plan_id,
+          starts_at = excluded.starts_at,
+          expires_at = excluded.expires_at,
+          boost_credits_total = excluded.boost_credits_total,
+          boost_credits_used = 0,
+          status = 'active',
+          updated_at = excluded.updated_at
+      `).bind(
         current.user_id,
         plan.id,
         startsAt.toISOString(),
         expiresAt.toISOString(),
         Number(plan.boost_credits || 0),
-        now()
+        now(),
+        current.id
       )
-      .run();
+    );
+
     if (current.property_id) {
-      await env.DB.prepare(`
-        UPDATE properties
-        SET
-          plan_type = 'standard',
-          listing_expires_at = ?,
-          updated_at = ?
-        WHERE id = ?
-          AND user_id = ?
-      `)
-        .bind(
+      statements.push(
+        env.DB.prepare(`
+          UPDATE properties
+          SET
+            plan_type = 'standard',
+            listing_expires_at = ?,
+            updated_at = ?
+          WHERE id = ?
+            AND user_id = ?
+            AND EXISTS (
+              SELECT 1
+              FROM payments
+              WHERE id = ?
+                AND status = 'processing'
+            )
+        `).bind(
           expiresAt.toISOString(),
           now(),
           current.property_id,
-          current.user_id
+          current.user_id,
+          current.id
         )
-        .run();
+      );
     }
   } else if (
     current.payment_type === "promotion" &&
@@ -2411,6 +2447,7 @@ async function completePayment(env, payment, transaction) {
     `)
       .bind(current.promotion_plan_id)
       .first();
+
     const property = await env.DB.prepare(`
       SELECT id, user_id
       FROM properties
@@ -2419,66 +2456,119 @@ async function completePayment(env, payment, transaction) {
     `)
       .bind(current.property_id)
       .first();
+
     if (
       !plan ||
       !property ||
       Number(property.user_id) !== Number(current.user_id)
     ) {
-      throw new Error("The property promotion could not be activated.");
+      throw new Error(
+        "The property promotion could not be activated."
+      );
     }
+
     const startsAt = new Date();
+
     const expiresAt = new Date(
       startsAt.getTime() +
         Number(plan.duration_days) * 24 * 60 * 60 * 1000
     );
-    await env.DB.prepare(`
-      INSERT INTO property_promotions (
-        property_id,
-        promotion_plan_id,
-        starts_at,
-        expires_at
-      )
-      VALUES (?, ?, ?, ?)
-    `)
-      .bind(
+
+    statements.push(
+      env.DB.prepare(`
+        INSERT INTO property_promotions (
+          property_id,
+          promotion_plan_id,
+          starts_at,
+          expires_at
+        )
+        SELECT ?, ?, ?, ?
+        WHERE EXISTS (
+          SELECT 1
+          FROM payments
+          WHERE id = ?
+            AND status = 'processing'
+        )
+      `).bind(
         property.id,
         plan.id,
         startsAt.toISOString(),
-        expiresAt.toISOString()
+        expiresAt.toISOString(),
+        current.id
       )
-      .run();
-    await env.DB.prepare(`
-      UPDATE properties
-      SET
-        is_featured = 1,
-        updated_at = ?
-      WHERE id = ?
-        AND user_id = ?
-    `)
-      .bind(
+    );
+
+    statements.push(
+      env.DB.prepare(`
+        UPDATE properties
+        SET
+          is_featured = 1,
+          updated_at = ?
+        WHERE id = ?
+          AND user_id = ?
+          AND EXISTS (
+            SELECT 1
+            FROM payments
+            WHERE id = ?
+              AND status = 'processing'
+          )
+      `).bind(
         now(),
         property.id,
-        current.user_id
+        current.user_id,
+        current.id
       )
-      .run();
+    );
   } else {
-    throw new Error("Payment type or plan information is invalid.");
-  }
-  // Mark successful only after the subscription or promotion
-  // has been activated.
-  const updated = await env.DB.prepare(`
-    UPDATE payments
-    SET
-      status = 'successful',
-      paid_at = ?
-    WHERE id = ?
-      AND status = 'pending'
-  `)
-    .bind(now(), current.id)
-    .run();
-  if (!updated.meta.changes) {
     throw new Error(
-      "Payment status changed before completion could finish."
+      "Payment type or plan information is invalid."
+    );
+  }
+
+  // Mark successful inside the same transaction as activation.
+  statements.push(
+    env.DB.prepare(`
+      UPDATE payments
+      SET
+        status = 'successful',
+        paid_at = ?
+      WHERE id = ?
+        AND status = 'processing'
+    `).bind(
+      now(),
+      current.id
+    )
+  );
+
+  // D1 executes this batch transactionally.
+  const results = await env.DB.batch(statements);
+
+  // If another request already completed this payment,
+  // do not activate it again.
+  if (!results[0].meta.changes) {
+    const latest = await env.DB.prepare(`
+      SELECT status
+      FROM payments
+      WHERE id = ?
+      LIMIT 1
+    `)
+      .bind(current.id)
+      .first();
+
+    if (latest && latest.status === "successful") {
+      return;
+    }
+
+    throw new Error(
+      "Payment could not be claimed for completion."
+    );
+  }
+
+  const finalPayment = results[results.length - 1];
+
+  if (!finalPayment.meta.changes) {
+    throw new Error(
+      "Payment completion was not confirmed."
     );
   }
 }
