@@ -2214,12 +2214,28 @@ async function loadListingPlans() {
       );
 
       const button = node("button", "button gold", "Choose Plan");
-
-      button.addEventListener("click", () => {
-        showAlert(
-          "Plan selection is available, but subscription activation must be connected to the payment workflow."
-        );
-      });
+button.addEventListener("click", async () => {
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Preparing payment...";
+  try {
+    const data = await api("/api/payments/initialize", {
+      method: "POST",
+      body: JSON.stringify({
+        listing_plan_id: Number(plan.id),
+        callback_url: location.origin + "/payment-callback.html"
+      })
+    });
+    if (!data.authorization_url) {
+      throw new Error("Payment link was not returned.");
+    }
+    location.href = data.authorization_url;
+  } catch (error) {
+    showAlert(error.message, true);
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
 
       card.appendChild(button);
       container.appendChild(card);
